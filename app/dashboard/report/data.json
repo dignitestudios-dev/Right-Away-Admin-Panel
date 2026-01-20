@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title": "User Activity Report",
+    "description": "Monthly user activity summary",
+    "type": "Activity",
+    "status": "Completed",
+    "createdAt": "2026-01-10 10:00 AM",
+    "date": "2026-01-10"
+  },
+  {
+    "id": 2,
+    "title": "Subscription Revenue",
+    "description": "Revenue generated from subscriptions",
+    "type": "Revenue",
+    "status": "Completed",
+    "createdAt": "2026-01-09 05:00 PM",
+    "date": "2026-01-09"
+  },
+  {
+    "id": 3,
+    "title": "System Usage Report",
+    "description": "Server and system usage statistics",
+    "type": "System",
+    "status": "Pending",
+    "createdAt": "2026-01-08 02:30 PM",
+    "date": "2026-01-08"
+  }
+]

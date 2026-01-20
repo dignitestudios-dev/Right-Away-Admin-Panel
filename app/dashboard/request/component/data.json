@@ -1,0 +1,43 @@
+[
+
+  {
+    "id": 1,
+    "name": "Ahmed Ali",
+    "email": "ahmed.ali@example.com",
+    "role": "Senior Developer",
+    "requestDate": "15 Jan, 2026",
+    "status": "Pending",
+    "department": "Engineering",
+    "phone": "+92 300 1234567",
+    "message": "I am requesting access to the production database for debugging purposes. This is urgent as we have a critical issue that needs immediate attention.",
+    "documents": [
+      { "name": "ID Card Front", "url": "https://images.unsplash.com/photo-1633409361618-c73427e4e206?w=400" },
+      { "name": "ID Card Back", "url": "https://images.unsplash.com/photo-1591796166816-d5d0c90ebee9?w=400" }
+    ],
+    "requestedBy": "Muhammad Usman",
+    "priority": "High",
+    "avatar": "https://randomuser.me/api/portraits/men/75.jpg"  
+  },
+
+
+
+  {
+    "id": 1,
+    "name": "Ahmed Ali",
+    "email": "ahmed.ali@example.com",
+    "role": "Senior Developer",
+    "requestDate": "15 Jan, 2026",
+    "status": "Pending",
+    "department": "Engineering",
+    "phone": "+92 300 1234567",
+    "message": "I am requesting access to the production database for debugging purposes. This is urgent as we have a critical issue that needs immediate attention.",
+    "documents": [
+      { "name": "ID Card Front", "url": "https://images.unsplash.com/photo-1633409361618-c73427e4e206?w=400" },
+      { "name": "ID Card Back", "url": "https://images.unsplash.com/photo-1591796166816-d5d0c90ebee9?w=400" }
+    ],
+    "requestedBy": "Muhammad Usman",
+    "priority": "High",
+    "avatar": "https://randomuser.me/api/portraits/men/75.jpg"  
+  }
+]
+

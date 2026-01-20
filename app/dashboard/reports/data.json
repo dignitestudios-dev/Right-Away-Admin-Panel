@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "reporterName": "Ali Khan",
+    "reporterEmail": "ali@gmail.com",
+    "reportedUserName": "Ahmed Raza",
+    "reportedUserEmail": "ahmed@gmail.com",
+    "date": "2026-01-10",
+    "status": "Completed",
+    "title": "User Activity Report",
+      "description": "Monthly user activity summary",
+      "isBlocked": false
+
+  },
+  {
+    "id": 2,
+    "reporterName": "Sara Malik",
+    "reporterEmail": "sara@gmail.com",
+   " reportedUserName": "Usman Ali",
+    "reportedUserEmail": "usman@gmail.com",
+    "date": "2026-01-09",
+    "status": "Completed",
+    "title": "Subscription Revenue",
+      "description": "Monthly user activity summary",
+      "isBlocked": false
+
+  },
+  {
+    "id": 3,
+    "reporterName": "Bilal Ahmed",
+    "reporterEmail": "bilal@gmail.com",
+    "reportedUserName": "Hassan Khan",
+    "reportedUserEmail": "hassan@gmail.com",
+    "date": "2026-01-08",
+    "status": "Pending",
+    "title": "System Usage Report",
+      "description": "Monthly user activity summary",
+      "isBlocked": true
+
+  }
+]
