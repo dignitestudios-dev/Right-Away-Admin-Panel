@@ -3,27 +3,21 @@
 import { useState } from "react";
 import initialNotificationData from "./data.json";
 import { NotificationsTable } from "./component/data-table";
-import { NotificationDetailModal } from "./detail/page";
+
 import { CreateNotificationModal } from "./component/create-notification";
 import { Button } from "@/components/ui/button";
+import NotificationDetailModal from "./detail/page";
 
 
-interface Notification {
-  id: number;
-  title: string;
-  message: string;
-  type: string;
-  status: "Read" | "Unread";
-  createdAt: string;
-}
+
 
 export default function NotificationsPage() {
        const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotificationData);
-  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [notifications, setNotifications] = useState<any>(initialNotificationData);
+  const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleViewNotification = (notification: Notification) => {
+  const handleViewNotification = (notification: any) => {
     setSelectedNotification(notification);
     setIsModalOpen(true);
   };

@@ -45,6 +45,7 @@ interface User {
   plan: string;
   billing: string;
   status: string;
+  phone: string;
 }
 
 interface UserFormValues {
@@ -54,6 +55,7 @@ interface UserFormValues {
   plan: string;
   billing: string;
   status: string;
+  phone : string;
 }
 
 interface DataTableProps {
@@ -211,13 +213,13 @@ const handleViewProfile = (item: User) => {
 
               {/* Join Date */}
               <TableCell>
-                <span className="text-sm">{item.joinDate}</span>
+                {/* <span className="text-sm">{item.joinDate}</span> */}
               </TableCell>
 
               {/* Orders */}
               <TableCell>
                 <p className="font-medium text-sm">
-                  {item.completedOrders} / {item.totalOrders}
+                  {/* {item.completedOrders} / {item.totalOrders} */}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Completed

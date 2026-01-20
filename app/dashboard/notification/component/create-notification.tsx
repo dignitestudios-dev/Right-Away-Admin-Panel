@@ -71,7 +71,7 @@ export function CreateNotificationModal({
             title: "",
             description: "",
             type: "instant",
-            recipient: "",
+            recipient: "user",
             when: "",
           }}
           validationSchema={NotificationSchema}

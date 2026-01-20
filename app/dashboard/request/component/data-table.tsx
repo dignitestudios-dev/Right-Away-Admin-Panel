@@ -32,23 +32,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+
 import { Label } from "@/components/ui/label";
-import { UserFormDialog } from "./user-form-dialog";
 
 import { useRouter } from "next/navigation";
 import EnhancedRequestModal from "./viewmodal";
 
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  avatar: string;
-  plan: string;
-  billing: string;
-  status: string;
-}
+// interface User {
+//   id: number;
+//   name: string;
+//   email: string;
+//   avatar: string;
+//   plan: string;
+//   billing: string;
+//   status: string;
+// }
 
 interface UserFormValues {
   name: string;
@@ -60,7 +59,7 @@ interface UserFormValues {
 }
 
 interface DataTableProps {
-  users: User[];
+  users: any;
  
  
 }
@@ -110,12 +109,20 @@ const router = useRouter();
   /* ================= STATUS BADGE ================= */
 
 
+  const handleAccept = (item: any) => {
+    alert("Request Accepted!");
+   
+  };
 
-const handleViewOrderHistory = (user: User) => {
+  const handleReject = (item: any) => {
+    alert("Request Rejected!");
+ 
+  };
+const handleViewOrderHistory = (user: any) => {
   console.log("View orders for:", user.name);
 };
 
-const handleView = (item) => {
+const handleView = (item: any) => {
   setSelectedRequest(item);
   setOpenViewModal(true);
 };
@@ -177,7 +184,7 @@ const handleView = (item) => {
 
     <TableBody>
       {paginatedUsers.length ? (
-        paginatedUsers.map((item) => (
+        paginatedUsers.map((item : any) => (
           <TableRow key={item.id}>
             
             {/* Person */}
@@ -242,7 +249,7 @@ const handleView = (item) => {
       <>
         <Button
           size="sm"
-          onClick={() => handleApprove(item.id)}
+          onClick={() => handleAccept(item.id)}
           className="bg-green-600 text-white flex items-center gap-1"
         >
           <Check className="h-4 w-4" /> 

@@ -96,9 +96,12 @@ const handleViewOrderDetail = (order: any) => {
 
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
-                <Badge variant={user.isBlocked ? "destructive" : "success"}>{user.status}</Badge>
-              </div>
+  <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
+  <Badge variant={user.isBlocked ? "destructive" : ("success" as any)}>
+    {user.status}
+  </Badge>
+</div>
+
 
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-gray-600">
@@ -160,7 +163,7 @@ const handleViewOrderDetail = (order: any) => {
           <p className="text-gray-600 leading-relaxed">{user.address}</p>
         </div>
       </Card>
-      
+
        <Card className="p-6 flex items-start gap-3">
         <div className="flex flex-col items-start space-x-4 mb-4  gap-2">
         <h2 className="text-xl font-semibold "> Reviews</h2>
@@ -249,12 +252,13 @@ const handleViewOrderDetail = (order: any) => {
                     <TableCell>{order.name}</TableCell>
                     <TableCell>{order.date}</TableCell>
                     <TableCell>
-                      <Badge variant={
-                        order.status === "Completed" ? "success" :
-                        order.status === "Cancelled" ? "destructive" : "secondary"
-                      }>
-                        {order.status}
-                      </Badge>
+                    <Badge variant={
+  order.status === "Completed" ? ("success" as any) :
+  order.status === "Cancelled" ? "destructive" : "secondary"
+}>
+  {order.status}
+</Badge>
+
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 
 
-export function ReportDetailModal({ report, open, onClose }) {
+export function ReportDetailModal({ report, open, onClose }: any) {
   if (!report) return null;
 
   const statusColor = {
@@ -27,7 +27,7 @@ export function ReportDetailModal({ report, open, onClose }) {
             Type: <strong>{report.type}</strong>
           </p>
           <p>
-            Status: <Badge className={statusColor[report.status]}>{report.status}</Badge>
+            Status: <Badge >{report.status}</Badge>
           </p>
           <p>
             Created At: <strong>{report.createdAt}</strong>

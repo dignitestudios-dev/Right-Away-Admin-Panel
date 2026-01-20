@@ -9,7 +9,7 @@ import data from "./component/data.json"
     return (
         <div>
   <h1 className="text-2xl font-bold p">Request</h1>
-            <DataTable  users={data}   />
+            <DataTable  users={data as any}   />
         </div>
 
     )

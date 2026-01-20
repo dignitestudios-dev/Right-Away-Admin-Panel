@@ -9,19 +9,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Eye } from "lucide-react";
+import { Download } from "lucide-react";
 
-import { Report } from "../types/report";
+
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StatCards } from "@/components/stat-cards";
 import { Input } from "@/components/ui/input";
 
 interface Props {
-  reports: Report[];
-  onViewReport: (report: Report) => void;
+  report: any[];
+  onViewReport: (report: any) => void;
 }
 
 export function ReportsTable({ report, onViewReport }: Props) {
@@ -33,9 +31,11 @@ export function ReportsTable({ report, onViewReport }: Props) {
   const pageSize = 5;
 
   const filteredReports = useMemo(() => {
-    return status === "all"
-      ? report
-      : report.filter((r) => r.status === status);
+   
+return status === "all"
+  ? report
+  : report?.filter((r) => r.status === status) ?? [];
+
   }, [report, status]);
 
   const totalPages = Math.ceil(filteredReports.length / pageSize);

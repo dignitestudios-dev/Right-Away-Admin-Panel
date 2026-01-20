@@ -9,7 +9,7 @@ const ReportsPage = () => {
     return (
         <div>
             <h1 className="text-2xl font-bold py-4">Reports</h1>
-         <DataTable reports={reports} />
+         <DataTable reports={reports as any} />
         </div>
     );
 };

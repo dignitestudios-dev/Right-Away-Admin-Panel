@@ -10,7 +10,7 @@ interface NotificationDetailModalProps {
   onClose: () => void;
 }
 
-export const NotificationDetailModal = ({ notification, isOpen, onClose }: NotificationDetailModalProps) => {
+export default function NotificationDetailModal({ notification, isOpen, onClose }: NotificationDetailModalProps) {
   if (!notification) return null;
 
   const statusColor = notification.status === "Unread" ? "bg-orange-50 text-orange-600" : "bg-green-50 text-green-600";

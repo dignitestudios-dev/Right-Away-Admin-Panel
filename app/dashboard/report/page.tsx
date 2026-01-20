@@ -14,8 +14,8 @@ export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleViewReport = (report) => {
-    setSelectedReport(report);
+  const handleViewReport = (items: any) => {
+    setSelectedReport(items);
     setIsModalOpen(true);
   };
 

@@ -60,11 +60,11 @@ export default function UsersPage() {
       <div className="@container/main px-4 lg:px-6 mt-2">
      {active === "users" ? (
   <DataTable 
-    users={users}   
+    users={users as any}   
   />
 ) : active === "rider" ? (
   <DataTable 
-    users={users}  
+    users={users as any}  
   />
 ) : null}
     

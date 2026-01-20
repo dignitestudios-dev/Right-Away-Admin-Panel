@@ -32,12 +32,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { UserFormDialog } from "./user-form-dialog";
+
 
 import { useRouter } from "next/navigation";
 import EnhancedReportsModal from "./viewmodal";
+import { Label } from "@/components/ui/label";
 
 
 
@@ -61,16 +60,12 @@ interface UserFormValues {
 }
 
 interface DataTableProps {
-  users: User[];
+  reports: User[];
  
  
 }
 
-export function DataTable({
-  reports,
-
- 
-}: DataTableProps) {
+export function DataTable({reports}: DataTableProps) {
 
   /* ================= STATES ================= */
  
@@ -116,8 +111,8 @@ const handleViewOrderHistory = (user: User) => {
   console.log("View orders for:", user.name);
 };
 
-const handleView = (item) => {
-  setSelectedRequest(item);
+const handleView = (report) => {
+  setSelectedRequest(report);
   setOpenViewModal(true);
 };
 
@@ -151,27 +146,27 @@ const handleView = (item) => {
             <TableCell>
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
-                  {report.reporterName.charAt(0)}
+                  {/* {report.reporterName.charAt(0)} */}
                 </div>
-                <p className="font-medium">{report.reporterName}</p>
+                {/* <p className="font-medium">{report.reporterName}</p> */}
               </div>
             </TableCell>
 
             {/* Reporter Email */}
             <TableCell className="text-sm">
-              {report.reporterEmail}
+              {/* {report.reporterEmail} */}
             </TableCell>
 
             {/* Reported User */}
             <TableCell>
-              <p className="font-medium">{report.reportedUserName}</p>
+              {/* <p className="font-medium">{report.reportedUserName}</p> */}
               <p className="text-xs text-gray-500">
-                {report.reportedUserEmail}
+                {/* {report.reportedUserEmail} */}
               </p>
             </TableCell>
 
             {/* Date */}
-            <TableCell>{report.date}</TableCell>
+            {/* <TableCell>{report.date}</TableCell> */}
 
             {/* Status */}
         
