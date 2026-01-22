@@ -14,15 +14,15 @@ interface AuthState {
 const initialState: AuthState = {
   user: {
     id: 1,
-    name: 'Dummy User',
-    email: 'dummy@example.com',
+    name: 'Admin',
+    email: 'admin@example.com',
   },
   isAuthenticated: true,
 };
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState,
+initialState,
   reducers: {
     login: (state) => {
       state.isAuthenticated = true;

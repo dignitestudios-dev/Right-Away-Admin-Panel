@@ -35,7 +35,7 @@ import {
 
 const data = {
   user: {
-    name: "Next js",
+    name: "Right Away",
     email: "admin@example.com",
     avatar: "",
   },
