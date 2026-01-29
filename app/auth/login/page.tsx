@@ -5,31 +5,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { login } from "@/lib/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { loginUser } from "@/lib/slices/authSlice";
+import { AppDispatch, RootState } from "@/lib/store";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { loading, error, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth,
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Dummy login logic
-    dispatch(login());
-    router.push("/dashboard");
+
+    const resultAction = await dispatch(
+      loginUser({ email, password, role: "admin" }),
+    );
+
+    // If login succeeded, redirect
+    if (loginUser.fulfilled.match(resultAction)) {
+      router.push("/dashboard");
+    }
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-md mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
         <p className="text-gray-600">Sign in to your account</p>
       </div>
+
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -42,12 +56,13 @@ const Login = () => {
             required
           />
         </div>
+
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
             <Input
               id="password"
-              type={!showPassword ? "text" : "password"}
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -77,8 +92,8 @@ const Login = () => {
           </Link>
         </div>
 
-        <Button type="submit" className="w-full">
-          Sign In
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Signing In..." : "Sign In"}
         </Button>
       </form>
     </div>

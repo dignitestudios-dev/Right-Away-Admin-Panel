@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { createNotification as createNotificationAPI } from "@/lib/api/notifications"; // ✅ import API
+
 /* ---------------- Validation Schema ---------------- */
 const NotificationSchema = Yup.object({
   title: Yup.string().required("Title is required"),
@@ -50,7 +52,7 @@ interface CreateNotificationForm {
 interface CreateNotificationModalProps {
   open: boolean;
   onClose: () => void;
-  onCreate: (data: CreateNotificationForm) => void;
+  onCreate?: (data: CreateNotificationForm) => void; // optional callback for parent
 }
 
 /* ---------------- Component ---------------- */
@@ -75,15 +77,36 @@ export function CreateNotificationModal({
             when: "",
           }}
           validationSchema={NotificationSchema}
-          onSubmit={(values, { resetForm }) => {
-            onCreate(values);
-            resetForm();
-            onClose();
+          onSubmit={async (values, { resetForm, setSubmitting }) => {
+            try {
+              // Prepare payload
+              const payload: any = {
+                title: values.title,
+                description: values.description,
+                role: values.recipient === "all" ? "all" : values.recipient,
+              };
+              if (values.type === "schedule" && values.when) {
+                // Convert ISO datetime to epoch seconds
+                const epochSeconds = Math.floor(
+                  new Date(values.when).getTime() / 1000,
+                );
+                payload.schedule = epochSeconds;
+              }
+
+              // Call API
+              await createNotificationAPI(payload);
+            } catch (error: any) {
+              console.error("Failed to create notification:", error);
+              alert("Failed to create notification. Please try again.");
+            } finally {
+              resetForm();
+              onClose();
+              setSubmitting(false);
+            }
           }}
         >
           {({ values, setFieldValue, isSubmitting }) => (
             <Form className="space-y-4">
-
               {/* Title */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">Title</label>
@@ -109,7 +132,8 @@ export function CreateNotificationModal({
                   className="text-sm text-red-500"
                 />
               </div>
-         {/* Recipient */}
+
+              {/* Recipient */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">Recipient</label>
                 <Select
@@ -154,16 +178,11 @@ export function CreateNotificationModal({
                 />
               </div>
 
-     
               {/* Schedule Date */}
               {values.type === "schedule" && (
                 <div className="space-y-1">
                   <label className="text-sm font-medium">Schedule Date</label>
-                  <Field
-                    as={Input}
-                    type="datetime-local"
-                    name="when"
-                  />
+                  <Field as={Input} type="datetime-local" name="when" />
                   <ErrorMessage
                     name="when"
                     component="p"
@@ -174,18 +193,13 @@ export function CreateNotificationModal({
 
               {/* Footer */}
               <DialogFooter className="pt-4 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                >
+                <Button type="button" variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  Create
+                  {isSubmitting ? "Creating..." : "Create"}
                 </Button>
               </DialogFooter>
-
             </Form>
           )}
         </Formik>

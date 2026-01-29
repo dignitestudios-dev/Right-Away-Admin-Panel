@@ -10,15 +10,6 @@ export const login = async (credentials: any) => {
   return response.data;
 };
 
-// Register API call
-export const register = async (credentials: any) => {
-  const response = await API.post('/auth/register', credentials);
-  if (response.data.token) {
-    localStorage.setItem('authToken', response.data.token);
-  }
-  return response.data;
-};
-
 // Logout API call
 export const logout = async () => {
   try {

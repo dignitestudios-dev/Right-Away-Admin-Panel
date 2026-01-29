@@ -11,49 +11,49 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const performanceMetrics = [
-  {
-    title: "Total Users",
-    current: "$2.4M",
-    previous: "$1.8M",
-    growth: 33.3,
-    icon: Users,
-  },
-  {
-    title: "Total Riders",
-    current: "12.5K",
-    icon: CreditCard,
-  },
-  {
-    title: "Total Orders",
-    current: "8.9k",
-    growth: 32.8,
-    icon: UserCheck,
-  },
-  {
-    title: "Pending Requests",
-    current: "17%",
-    previous: "24%",
-    growth: -8.0,
-    icon: Clock5,
-  },
-   {
-    title: "Revenue",
-    current: "17%",
-    previous: "24%",
-    growth: -8.0,
-    icon: Clock5,
-  },
-   {
-    title: "Total Reports",
-    current: "17%",
-    previous: "24%",
-    growth: -8.0,
-    icon: Clock5,
-  },
-];
+export function StatCards({ dashboard }) {
+  const performanceMetrics = [
+    {
+      title: "Total Users",
+      current: dashboard?.totalUser,
+      previous: "$1.8M",
+      growth: 33.3,
+      icon: Users,
+    },
+    {
+      title: "Total Riders",
+      current:dashboard?.totalRider,
+      icon: CreditCard,
+    },
+    {
+      title: "Total Orders",
+      current:dashboard?.totalordersCount,
+      growth: 32.8,
+      icon: UserCheck,
+    },
+    {
+      title: "Pending Requests",
+      current:dashboard?.totalRequestCount,
+      previous: "24%",
+      growth: -8.0,
+      icon: Clock5,
+    },
+    {
+      title: "Revenue",
+      current:dashboard?.totalordersPrice,
+      previous: "24%",
+      growth: -8.0,
+      icon: Clock5,
+    },
+    {
+      title: "Total Reports",
+      current:dashboard?.totalReports,
+      previous: "24%",
+      growth: -8.0,
+      icon: Clock5,
+    },
+  ];
 
-export function StatCards() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {performanceMetrics.map((metric, index) => (
@@ -67,7 +67,7 @@ export function StatCards() {
                   className={cn(
                     metric.growth >= 0
                       ? "border-green-200 bg-green-50 text-green-700"
-                      : "border-red-200 bg-red-50 text-red-700"
+                      : "border-red-200 bg-red-50 text-red-700",
                   )}
                 >
                   {metric.growth >= 0 ? (

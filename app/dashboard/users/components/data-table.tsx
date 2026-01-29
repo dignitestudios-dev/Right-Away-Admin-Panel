@@ -35,7 +35,9 @@ import { Label } from "@/components/ui/label";
 import { UserFormDialog } from "./user-form-dialog";
 
 import { useRouter } from "next/navigation";
-
+import { exportUsersCSV } from "@/lib/api/adminUsers";
+import { formatDate } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface User {
   id: number;
@@ -46,6 +48,7 @@ interface User {
   billing: string;
   status: string;
   phone: string;
+  joinedDate: any;
 }
 
 interface UserFormValues {
@@ -55,29 +58,61 @@ interface UserFormValues {
   plan: string;
   billing: string;
   status: string;
-  phone : string;
+  phone: string;
 }
 
 interface DataTableProps {
   users: User[];
- 
- 
+  role: any;
+  loading: boolean;
 }
 
-export function DataTable({
-  users,
+const SkeletonRow = (index) => (
+  <TableRow key={`loading-${index}`}>
+    {/* User / Rider */}
+    <TableCell>
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      </div>
+    </TableCell>
 
- 
-}: DataTableProps) {
+    {/* Contact */}
+    <TableCell>
+      <div className="space-y-1">
+        <Skeleton className="h-3 w-3/4" />
+        <Skeleton className="h-2 w-1/2" />
+      </div>
+    </TableCell>
 
+    {/* Join Date */}
+    <TableCell>
+      <Skeleton className="h-3 w-1/2" />
+    </TableCell>
+
+    {/* Status */}
+    <TableCell>
+      <Skeleton className="h-5 w-16 rounded-full" />
+    </TableCell>
+
+    {/* Actions */}
+    <TableCell className="text-right">
+      <Skeleton className="h-8 w-8 rounded-full inline-block" />
+    </TableCell>
+  </TableRow>
+);
+
+export function DataTable({ users, role, loading }: DataTableProps) {
   /* ================= STATES ================= */
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("users");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-const router = useRouter();
+  const router = useRouter();
   /* ================= FILTER LOGIC ================= */
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -91,6 +126,7 @@ const router = useRouter();
     return matchesSearch && matchesStatus;
   });
 
+  console.log(filteredUsers, "filteredUser");
   /* ================= PAGINATION ================= */
   useEffect(() => {
     setTotalPages(Math.ceil(filteredUsers.length / pageSize));
@@ -99,7 +135,7 @@ const router = useRouter();
 
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   const handlePreviousPage = () => {
@@ -112,35 +148,29 @@ const router = useRouter();
 
   /* ================= STATUS BADGE ================= */
 
+  const handleViewProfile = (user: User) => {
+    router.push(`/dashboard/users/${user.id}?role=${role}`);
+  };
 
-
-const handleViewOrderHistory = (user: User) => {
-  console.log("View orders for:", user.name);
-};
-
-const handleViewProfile = (item: User) => {
-  // Navigate to detail page with id
-  router.push(`/dashboard/users/profile`);
-};
+  const handleViewOrderHistory = (user: User) => {
+    router.push(`/dashboard/users/${user.id}/orders?role=${role}`);
+  };
 
   /* ================= UI ================= */
   return (
     <div className="w-full space-y-4">
-
       {/* Header */}
       <div className="flex justify-end gap-2">
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => exportUsersCSV(role)}>
           <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
-    
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-wrap gap-4">
-
             {/* Search */}
             <div className="flex-1 min-w-[280px] relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
@@ -166,112 +196,105 @@ const handleViewProfile = (item: User) => {
                 </SelectContent>
               </Select>
             </div>
-
           </div>
         </CardContent>
       </Card>
 
       {/* Table */}
       <div className="rounded-md border">
-         <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>
-            {activeTab === "users" ? "User" : "Rider"}
-          </TableHead>
-          <TableHead>Contact</TableHead>
-          <TableHead>Join Date</TableHead>
-          <TableHead>Orders</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-
-      <TableBody>
-        {paginatedUsers.length ? (
-          paginatedUsers.map((item) => (
-            <TableRow key={item.id}>
-              {/* User / Rider */}
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                    {item.avatar}
-                  </div>
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                  </div>
-                </div>
-              </TableCell>
-
-              {/* Contact */}
-              <TableCell>
-                <p className="text-sm">{item.email}</p>
-                <p className="text-xs text-muted-foreground">
-                  {item.phone}
-                </p>
-              </TableCell>
-
-              {/* Join Date */}
-              <TableCell>
-                {/* <span className="text-sm">{item.joinDate}</span> */}
-              </TableCell>
-
-              {/* Orders */}
-              <TableCell>
-                <p className="font-medium text-sm">
-                  {/* {item.completedOrders} / {item.totalOrders} */}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Completed
-                </p>
-              </TableCell>
-
-              {/* Status */}
-              <TableCell>
-                <Badge
-                  variant="secondary"
-                  className={
-                    item.status === "Active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }
-                >
-                  {item.status === "Active" ? "Active" : "Blocked"}
-                </Badge>
-              </TableCell>
-
-              {/* Actions */}
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleViewProfile(item)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-
-                 
-                </div>
-              </TableCell>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{activeTab === "users" ? "User" : "Rider"}</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Join Date</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ))
-        ) : (
-          <TableRow>
-            <TableCell colSpan={6} className="h-24 text-center">
-              No data found
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+          </TableHeader>
+
+          <TableBody>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <SkeletonRow index={index} />
+              ))
+            ) : paginatedUsers.length ? (
+              paginatedUsers.map((item) => (
+                <TableRow key={item.id}>
+                  {/* User / Rider */}
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                        {item.avatar}
+                      </div>
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* Contact */}
+                  <TableCell>
+                    <p className="text-sm">{item.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.phone}
+                    </p>
+                  </TableCell>
+
+                  {/* Join Date */}
+                  <TableCell>
+                    <span className="text-sm">
+                      {formatDate(item.joinedDate)}
+                    </span>
+                  </TableCell>
+
+                  {/* Status */}
+                  <TableCell>
+                    <Badge
+                      variant="secondary"
+                      className={
+                        item.status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }
+                    >
+                      {item.status === "Active" ? "Active" : "Blocked"}
+                    </Badge>
+                  </TableCell>
+
+                  {/* Actions */}
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleViewProfile(item)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  No data found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Pagination */}
       <div className="flex justify-between items-center py-4">
         <div className="flex items-center gap-2">
           <Label>Show</Label>
-          <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(v) => setPageSize(Number(v))}
+          >
             <SelectTrigger className="w-20">
               <SelectValue />
             </SelectTrigger>
@@ -279,24 +302,32 @@ const handleViewProfile = (item: User) => {
               <SelectItem value="5">5</SelectItem>
               <SelectItem value="10">10</SelectItem>
               <SelectItem value="20">20</SelectItem>
-         
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handlePreviousPage} disabled={currentPage === 1}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+          >
             Previous
           </Button>
           <span className="text-sm">
             Page {currentPage} of {totalPages}
           </span>
-          <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
             Next
           </Button>
         </div>
       </div>
-
     </div>
   );
 }

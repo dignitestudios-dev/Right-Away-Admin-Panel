@@ -1,17 +1,38 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DataTable } from "./component/data-table";
-import initialReportsData from "./data.json";
-const ReportsPage = () => {
-    const [reports, setReports] = useState(initialReportsData);
+import { API } from "@/lib/api/axios";
 
-    console.log(reports);
-    return (
-        <div>
-            <h1 className="text-2xl font-bold py-4">Reports</h1>
-         <DataTable reports={reports as any} />
-        </div>
-    );
+const ReportsPage = () => {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refech, SetRefech] = useState(false);
+  const fetchReports = async () => {
+    try {
+      const res = await API.get("/admin/reports");
+      setReports(res.data?.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, [refech]);
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold py-4">Reports</h1>
+
+      {loading ? (
+        <p>Loading reports...</p>
+      ) : (
+        <DataTable SetRefech={SetRefech} reports={reports as any} />
+      )}
+    </div>
+  );
 };
 
 export default ReportsPage;

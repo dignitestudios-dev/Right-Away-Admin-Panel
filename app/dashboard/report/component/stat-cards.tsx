@@ -10,24 +10,31 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-const performanceMetrics = [
-  {
-    title: "Total Revenue",
-    current: "$2.4M",
-    previous: "$1.8M",
-    growth: 33.3,
-    icon: Users,
-  },
-  {
-    title: "Total Orders",
-    current: "12.5K",
-    icon: CreditCard,
-  },
-
-];
+import { useEffect, useState } from "react";
+import { getRevenueDashboard } from "@/lib/api/adminRevenue.service";
 
 export function StatCards() {
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    getRevenueDashboard().then(setStats).catch(console.error);
+  }, []);
+  const performanceMetrics = [
+    {
+      title: "Total Revenue",
+      current: stats?.totalordersPrice,
+      previous: "$1.8M",
+      growth: 33.3,
+      icon: Users,
+    },
+    {
+      title: "Total Orders",
+      current: stats?.totalordersCount,
+      icon: CreditCard,
+    },
+  ];
+  console.log(stats, "state---->");
+  if (!stats) return null;
   return (
     <div className="grid gap-2 grid-cols-2 ">
       {performanceMetrics.map((metric, index) => (
@@ -41,7 +48,7 @@ export function StatCards() {
                   className={cn(
                     metric.growth >= 0
                       ? "border-green-200 bg-green-50 text-green-700"
-                      : "border-red-200 bg-red-50 text-red-700"
+                      : "border-red-200 bg-red-50 text-red-700",
                   )}
                 >
                   {metric.growth >= 0 ? (

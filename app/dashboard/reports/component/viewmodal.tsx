@@ -1,30 +1,36 @@
+import { API } from "@/lib/api/axios";
 import { FileImage, Mail, User, X } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function EnhancedReportsModal({
   onClose,
   selectedRequest,
+  SetRefech,
 }) {
-const handleBlock = () => {
-  alert("User Blocked");
-  // API call later
-};
-
-const handleUnblock = () => {
-  alert("User Unblocked");
-  // API call later
-};
+  const [loading, setLoading] = useState(false);
+  const handleResolve = async () => {
+    try {
+      setLoading(!loading);
+      await API.put(`/admin/reports/${selectedRequest.reportId}`, {
+        status: "resolved",
+      });
+      SetRefech((prev) => !prev);
+      setLoading(!loading);
+      onClose();
+    } catch (err) {
+      setLoading(!loading);
+      console.error(err);
+    }
+  };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden">
-
         {/* Header */}
         <div className="bg-gradient-to-r from-[#1bae77] to-green-300 text-white p-6">
           <div className="flex justify-between">
             <div>
-              <h2 className="text-2xl font-bold">
-                {selectedRequest.title}
-              </h2>
+              <h2 className="text-2xl font-bold">{selectedRequest.title}</h2>
               <p className="text-sm opacity-90">
                 {selectedRequest.type} Report
               </p>
@@ -37,10 +43,6 @@ const handleUnblock = () => {
 
         {/* Content */}
         <div className="overflow-y-auto p-6 space-y-6">
-
-  
-        
-
           {/* Reporter Info */}
           <div className="bg-gray-50 rounded-xl p-5">
             <h3 className="font-semibold mb-4">Reporter Information</h3>
@@ -50,7 +52,7 @@ const handleUnblock = () => {
                 <User className="text-green-600" />
                 <div>
                   <p className="text-xs text-gray-500">Name</p>
-                  <p>{selectedRequest.reportedUserName}</p>
+                  <p>{selectedRequest.reporter?.name}</p>
                 </div>
               </div>
 
@@ -58,7 +60,7 @@ const handleUnblock = () => {
                 <Mail className="text-green-600" />
                 <div>
                   <p className="text-xs text-gray-500">Email</p>
-                  <p>{selectedRequest.reportedUserEmail}</p>
+                  <p>{selectedRequest.reporter?.email}</p>
                 </div>
               </div>
             </div>
@@ -71,12 +73,7 @@ const handleUnblock = () => {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-gray-500">Name</p>
-                <p>{selectedRequest.reporterName}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500">Email</p>
-                <p>{selectedRequest.reporterEmail}</p>
+                <p>{selectedRequest.reportedUser.name}</p>
               </div>
             </div>
           </div>
@@ -84,7 +81,7 @@ const handleUnblock = () => {
           {/* Description */}
           <div className="bg-blue-50 border rounded-xl p-5">
             <h3 className="font-semibold mb-2">Report Description</h3>
-            <p className="text-sm">{selectedRequest.description}</p>
+            <p className="text-sm">{selectedRequest.reason}</p>
           </div>
 
           {/* Documents */}
@@ -109,39 +106,22 @@ const handleUnblock = () => {
         </div>
 
         {/* Footer */}
-       {/* Footer */}
-<div className="border-t p-6 bg-gray-50">
-  <div className="flex justify-end gap-3">
+        <div className="border-t p-6 bg-gray-50">
+          <div className="flex justify-end gap-3">
+            {/* Close */}
+            <button onClick={onClose} className="border px-5 py-2 rounded-lg">
+              Close
+            </button>
 
-    {/* Close */}
-    <button
-      onClick={onClose}
-      className="border px-5 py-2 rounded-lg"
-    >
-      Close
-    </button>
-
-    {/* Block / Unblock */}
-    {selectedRequest.isBlocked ? (
-      <button
-        onClick={handleUnblock}
-        className="bg-blue-600 text-white px-5 py-2 rounded-lg"
-      >
-        Unblock User
-      </button>
-    ) : (
-      <button
-        onClick={handleBlock}
-        className="bg-red-600 text-white px-5 py-2 rounded-lg"
-      >
-        Block User
-      </button>
-    )}
-
-  </div>
-</div>
-
-
+            {/* Block / Unblock */}
+            <button
+              onClick={handleResolve}
+              className="bg-green-600 text-white px-5 py-2 rounded-lg"
+            >
+              {loading ? "Marking..." : "Mark as Resolved"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

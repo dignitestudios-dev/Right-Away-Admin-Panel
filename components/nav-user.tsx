@@ -8,9 +8,9 @@ import {
   CircleUser,
 } from "lucide-react";
 import Link from "next/link";
-import { useDispatch } from 'react-redux';
-import { logout } from '@/lib/slices/authSlice';
-import { useRouter } from 'next/navigation';
+import { useDispatch } from "react-redux";
+import { logout, logoutUser } from "@/lib/slices/authSlice";
+import { useRouter } from "next/navigation";
 
 import { Logo } from "@/components/logo";
 import {
@@ -28,6 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { AppDispatch } from "@/lib/store";
 
 export function NavUser({
   user,
@@ -39,12 +40,12 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
   const router = useRouter();
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    await dispatch(logoutUser()).unwrap();
+    router.push("/auth/login");
   };
 
   return (
@@ -87,28 +88,6 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/account">
-                  <CircleUser />
-                  Account
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/billing">
-                  <CreditCard />
-                  Billing
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/notifications">
-                  <BellDot />
-                  Notifications
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
               <LogOut />
               Log out

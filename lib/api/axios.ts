@@ -1,9 +1,31 @@
 import axios from "axios";
+import Cookies from "js-cookie";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
+export const baseURL = "https://api.rightawayapp.com/"; // Replace with your actual base URL
+let cachedDeviceId: string | null = null;
 
-export const baseURL = "your-api-baseurl.com/api"; // Replace with your actual base URL
+export async function getDeviceFingerprint() {
+  if (cachedDeviceId) return cachedDeviceId;
 
+  if (typeof window === "undefined") {
+    // Running on server, return a fallback ID or empty string
+    return "server-device-id";
+  }
+
+  const fp = await import("@fingerprintjs/fingerprintjs"); // dynamic import only on client
+  const agent = await fp.load();
+  const result = await agent.get();
+  cachedDeviceId = result.visitorId;
+
+  return cachedDeviceId;
+}
+
+
+  const deviceId = await getDeviceFingerprint();
 const headers = {
   "Content-Type": "application/json",
+  devicemodel: deviceId,
+    deviceuniqueid: deviceId,
 };
 const formDataHeaders = {
   "Content-Type": "multipart/form-data",

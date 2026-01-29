@@ -2,17 +2,23 @@
 
 import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { verifyOTP } from "@/lib/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/lib/store";
 
 const Verification = () => {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
-
+  const { loading, error, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth,
+  );
+  const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    index: number
+    index: number,
   ) => {
     const value = e.target.value;
 
@@ -38,7 +44,7 @@ const Verification = () => {
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    index: number
+    index: number,
   ) => {
     if (e.key === "Backspace") {
       e.preventDefault();
@@ -60,13 +66,23 @@ const Verification = () => {
       inputRefs.current[index + 1]?.focus();
     }
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
+const searchParams = useSearchParams();
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const email = searchParams.get("email") || "";
     const otpCode = otp.join("");
 
-    if (otpCode.length === 6) {
+    if (otpCode.length === 4) {
       // Verify OTP logic here
+      await dispatch(
+        verifyOTP({
+          email: email,
+          otp: otpCode,
+          role: "admin",
+        }),
+      ).unwrap();
+
       console.log("OTP submitted:", otpCode);
       // Redirect to password reset page or dashboard
       router.push("/auth/reset-password");
@@ -78,7 +94,9 @@ const Verification = () => {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Verify Your Email</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          Verify Your Email
+        </h2>
         <p className="text-gray-600">
           We've sent a 6-digit code to your email address. Enter it below.
         </p>
@@ -105,11 +123,14 @@ const Verification = () => {
         </div>
 
         <Button type="submit" className="w-full" disabled={!isComplete}>
-          Verify OTP
+          {loading ? "Verifying..." : "Verify OTP"}
         </Button>
 
         <div className="text-center">
-          <Link href="/auth/login" className="text-sm text-primary hover:underline">
+          <Link
+            href="/auth/login"
+            className="text-sm text-primary hover:underline"
+          >
             Back to Sign In
           </Link>
         </div>

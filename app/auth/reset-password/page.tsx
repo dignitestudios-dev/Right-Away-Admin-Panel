@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { resetPassword } from "@/lib/slices/authSlice";
+import { AppDispatch, RootState } from "@/lib/store";
+import { useDispatch, useSelector } from "react-redux";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -15,8 +18,11 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
+  const { loading, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth,
+  );
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -35,10 +41,11 @@ const ResetPassword = () => {
       setError("Passwords do not match");
       return;
     }
+    await dispatch(resetPassword({ password: password }));
 
     // Reset password logic here
     console.log("Password reset with:", password);
-    
+
     // Redirect to login page
     router.push("/auth/login");
   };
@@ -46,10 +53,10 @@ const ResetPassword = () => {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h2>
-        <p className="text-gray-600">
-          Enter your new password below
-        </p>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          Reset Password
+        </h2>
+        <p className="text-gray-600">Enter your new password below</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -112,11 +119,14 @@ const ResetPassword = () => {
         </div>
 
         <Button type="submit" className="w-full">
-          Reset Password
+          {loading ? "Reseting" : "Reset Password"}
         </Button>
 
         <div className="text-center">
-          <Link href="/auth/login" className="text-sm text-primary hover:underline">
+          <Link
+            href="/auth/login"
+            className="text-sm text-primary hover:underline"
+          >
             Back to Sign In
           </Link>
         </div>

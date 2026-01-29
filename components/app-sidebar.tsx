@@ -53,7 +53,6 @@ const data = {
     {
       label: "Apps",
       items: [
-
         {
           title: "Users",
           url: "/dashboard/users",
@@ -65,36 +64,34 @@ const data = {
           icon: Mail,
         },
         {
-          title: "Report",
+          title: "Revenue Report",
           url: "/dashboard/report",
           icon: CheckSquare,
         },
-    
+
         {
           title: "Requests",
           url: "/dashboard/request",
           icon: Calendar,
         },
-      
 
-            {
+        {
           title: "Reports",
           url: "/dashboard/reports",
           icon: MessageCircle,
         },
       ],
     },
-  
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = useSelector((state: RootState) => state.auth.user);
+  const admin = useSelector((state: RootState) => state.auth.admin);
 
-  const userData = user
+  const userData = admin
     ? {
-        name: user.name,
-        email: user.email,
+        name: admin.name,
+        email: admin.email,
         avatar: "",
       }
     : {
