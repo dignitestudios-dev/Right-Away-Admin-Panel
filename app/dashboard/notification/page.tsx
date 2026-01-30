@@ -20,12 +20,12 @@ interface Notification {
 }
 
 export default function AdminNotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[] | any>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [notificationView, setNotificationView] = useState(false);
   const [selectedNotification, setSelectedNotification] =
-    useState<Notification>();
+    useState<Notification | any>();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,7 +65,7 @@ export default function AdminNotificationsPage() {
     }
   };
 
-  const handleViewNotification = (notif: Notification) => {
+  const handleViewNotification = (notif: Notification | any) => {
     setNotificationView(true);
     setSelectedNotification(notif);
   };
