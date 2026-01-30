@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -18,11 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { SkeletonRow } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/utils";
+import { Pagination } from "@/components/ui/pagination";
 
 interface Notification {
-  id: number;
+  _id: number;
   title: string;
   description: string;
   type: string;
@@ -32,73 +33,54 @@ interface Notification {
 
 interface NotificationsTableProps {
   notifications: Notification[];
-  onViewNotification: (notification: Notification) => void;
+  loading: boolean;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  statusFilter: "all" | "Read" | "Unread";
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  onStatusFilterChange: (status: "all" | "Read" | "Unread") => void;
+  onViewNotification: (notif: Notification) => void;
 }
 
 export function NotificationsTable({
   notifications,
+  loading,
+  currentPage,
+  totalPages,
+  pageSize,
+  statusFilter,
+  onPageChange,
+  onPageSizeChange,
+  onStatusFilterChange,
   onViewNotification,
 }: NotificationsTableProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const [statusFilter, setStatusFilter] = useState("all");
-  console.log(notifications, "notifcations--->");
-  // Filter notifications by status
-  const filteredNotifications = notifications.filter((notif) => {
-    if (statusFilter === "all") return true;
-    return notif.status === statusFilter;
-  });
-
-  const totalPages = Math.ceil(filteredNotifications.length / pageSize);
-
-  // Pagination
-  const paginatedNotifications = filteredNotifications.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
-
   const getStatusColor = (status: string) =>
     status === "Unread"
       ? "bg-orange-50 text-orange-600"
       : "bg-green-50 text-green-600";
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePageSizeChange = (value: string) => {
-    setPageSize(Number(value));
-    setCurrentPage(1);
-  };
-
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    setCurrentPage(1);
-  };
-
+  console.log(totalPages, "table");
   return (
     <div className="w-full space-y-4">
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center space-x-2">
-          <Label htmlFor="status-filter" className="text-sm font-medium">
-            Status
-          </Label>
-          <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
-            <SelectTrigger id="status-filter" className="w-40 cursor-pointer">
-              <SelectValue placeholder="Select Status" />
-            </SelectTrigger>
-            <SelectContent side="top">
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Read">Read</SelectItem>
-              <SelectItem value="Unread">Unread</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="flex items-center space-x-2 mb-2">
+        <Label htmlFor="status-filter" className="text-sm font-medium">
+          Status
+        </Label>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => onStatusFilterChange(v as any)}
+        >
+          <SelectTrigger id="status-filter" className="w-40 cursor-pointer">
+            <SelectValue placeholder="Select Status" />
+          </SelectTrigger>
+          <SelectContent side="top">
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="Read">Read</SelectItem>
+            <SelectItem value="Unread">Unread</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
@@ -115,9 +97,13 @@ export function NotificationsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedNotifications.length ? (
-              paginatedNotifications.map((notif) => (
-                <TableRow key={notif.id}>
+            {loading ? (
+              Array.from({ length: pageSize }).map((_, i) => (
+                <SkeletonRow index={i} key={i} />
+              ))
+            ) : notifications.length ? (
+              notifications.map((notif) => (
+                <TableRow key={notif._id}>
                   <TableCell>{notif.title}</TableCell>
                   <TableCell>{notif.description}</TableCell>
                   <TableCell>{notif.type}</TableCell>
@@ -126,8 +112,7 @@ export function NotificationsTable({
                       {notif.status}
                     </span>
                   </TableCell>
-
-                  <TableCell> {formatDate(notif.createdAt)}</TableCell>
+                  <TableCell>{formatDate(notif.createdAt)}</TableCell>
                   <TableCell>
                     <Button
                       variant="ghost"
@@ -152,13 +137,14 @@ export function NotificationsTable({
 
       {/* Pagination */}
       <div className="flex items-center justify-between py-4">
+        {/* Page size */}
         <div className="flex items-center space-x-2">
           <Label htmlFor="page-size" className="text-sm font-medium">
             Show
           </Label>
           <Select
             value={pageSize.toString()}
-            onValueChange={handlePageSizeChange}
+            onValueChange={(v) => onPageSizeChange(Number(v))}
           >
             <SelectTrigger id="page-size" className="w-20 cursor-pointer">
               <SelectValue placeholder={pageSize.toString()} />
@@ -170,29 +156,14 @@ export function NotificationsTable({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex gap-4">
-          <div className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
-          </div>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePreviousPage}
-              disabled={currentPage <= 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={currentPage >= totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+
+        {/* Pagination Component */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPrevious={() => onPageChange(currentPage - 1)}
+          onNext={() => onPageChange(currentPage + 1)}
+        />
       </div>
     </div>
   );

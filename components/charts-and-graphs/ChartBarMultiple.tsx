@@ -8,7 +8,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getChartLabel } from "@/lib/utils";
 
 const chartConfig = {
   users: {
@@ -25,9 +25,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ChartBarMultiple({ data }: { data: any[] }) {
+export function ChartBarMultiple({
+  data,
+  type,
+}: {
+  data: any[];
+  type: "daily" | "weekly" | "monthly";
+}) {
   const chartData = data.map((item) => ({
-    date: formatDate(item.date),
+    date: getChartLabel(item, type),
     users: item.users,
     riders: item.riders,
     companies: item.companies,
@@ -47,7 +53,7 @@ export function ChartBarMultiple({ data }: { data: any[] }) {
             <ChartTooltip content={<ChartTooltipContent />} />
 
             <Bar dataKey="users" fill="var(--color-users)" radius={4} />
-            <Bar dataKey="riders" fill="var(--color-riders)" radius={4} />
+            <Bar dataKey="riders" fill="var(--color-riders)" radius={4} />  
             <Bar dataKey="companies" fill="var(--color-companies)" radius={4} />
           </BarChart>
         </ChartContainer>

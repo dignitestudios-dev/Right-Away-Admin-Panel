@@ -7,27 +7,10 @@ import { getUsers } from "@/lib/api/adminUsers";
 import { mapUsersForTable } from "@/lib/utils";
 
 export default function UsersPage() {
-  const [active, setActive] = useState<"users" | "rider">("users");
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [active, setActive] = useState<"users" | "rider" | "company">("users");
 
-  const role = active === "users" ? "user" : "rider";
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const data = await getUsers(role);
-      setUsers(mapUsersForTable(data));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, [active]);
+  const role: "user" | "rider" | "company" =
+    active === "users" ? "user" : active === "rider" ? "rider" : "company";
 
   return (
     <div className="flex flex-col gap-4">
@@ -47,9 +30,16 @@ export default function UsersPage() {
         >
           Riders
         </Button>
+
+        <Button
+          variant={active === "company" ? "default" : "outline"}
+          onClick={() => setActive("company")}
+        >
+          Companies
+        </Button>
       </div>
 
-      <DataTable users={users} role={role} loading={loading} />
+      <DataTable role={role} />
     </div>
   );
 }

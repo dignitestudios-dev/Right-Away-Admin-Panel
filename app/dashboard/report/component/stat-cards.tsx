@@ -12,19 +12,42 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { getRevenueDashboard } from "@/lib/api/adminRevenue.service";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function StatCards() {
   const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getRevenueDashboard().then(setStats).catch(console.error);
+    getRevenueDashboard()
+      .then(setStats)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) {
+    return (
+      <div className="grid gap-2 grid-cols-2">
+        {[1, 2].map((i) => (
+          <Card key={i}>
+            <CardContent className="space-y-3">
+              <Skeleton className="h-6 w-6" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-24" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (!stats) return null;
   const performanceMetrics = [
     {
       title: "Total Revenue",
       current: stats?.totalordersPrice,
-      previous: "$1.8M",
-      growth: 33.3,
+      previous: "",
+      growth: "",
       icon: Users,
     },
     {
@@ -42,29 +65,6 @@ export function StatCards() {
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
               <metric.icon className="text-muted-foreground size-6" />
-              {metric?.growth && (
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    metric.growth >= 0
-                      ? "border-green-200 bg-green-50 text-green-700"
-                      : "border-red-200 bg-red-50 text-red-700",
-                  )}
-                >
-                  {metric.growth >= 0 ? (
-                    <>
-                      <TrendingUp className="me-1 size-3" />
-                      {metric.growth >= 0 ? "+" : ""}
-                      {metric.growth}%
-                    </>
-                  ) : (
-                    <>
-                      <TrendingDown className="me-1 size-3" />
-                      {metric.growth}%
-                    </>
-                  )}
-                </Badge>
-              )}
             </div>
 
             <div className="space-y-2">

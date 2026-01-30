@@ -26,11 +26,25 @@ export default function AdminNotificationsPage() {
   const [notificationView, setNotificationView] = useState(false);
   const [selectedNotification, setSelectedNotification] =
     useState<Notification>();
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<"all" | "Read" | "Unread">(
+    "all",
+  );
+
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const data = await getAdminNotifications();
-      setNotifications(data);
+      const res = await getAdminNotifications({
+        page: currentPage,
+        limit: pageSize,
+        status: statusFilter,
+      });
+      setNotifications(res.notifications);
+      setTotalPages(res.pagination.totalPages);
     } catch (err) {
       console.error("Error fetching notifications:", err);
     } finally {
@@ -40,25 +54,20 @@ export default function AdminNotificationsPage() {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [currentPage, pageSize, statusFilter]);
 
   const handleCreateNotification = async (formData: any) => {
     try {
-      await createNotification({ ...formData, role: "company" }); // assuming admin creates for "company"
+      await createNotification({ ...formData, role: "company" });
       fetchNotifications(); // refresh table
     } catch (err) {
       console.error("Error creating notification:", err);
     }
   };
 
-  const handleCloseModal = () => {
-    setNotificationView(false);
-  };
-
   const handleViewNotification = (notif: Notification) => {
     setNotificationView(true);
     setSelectedNotification(notif);
-    // Optional: call API to mark as "Read" here
   };
 
   return (
@@ -70,24 +79,29 @@ export default function AdminNotificationsPage() {
         </Button>
       </div>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <NotificationsTable
-          notifications={notifications}
-          onViewNotification={handleViewNotification}
-        />
-      )}
+      <NotificationsTable
+        notifications={notifications}
+        loading={loading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={setPageSize}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onViewNotification={handleViewNotification}
+      />
 
       <CreateNotificationModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreate={handleCreateNotification}
       />
+
       <NotificationDetailModal
         notification={selectedNotification}
         isOpen={notificationView}
-        onClose={handleCloseModal}
+        onClose={() => setNotificationView(false)}
       />
     </div>
   );

@@ -1,19 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Eye,
-  Download,
-  Search,
-  Filter,
-  CheckCircle,
-  Ban,
-  Package,
-  Check,
-  X,
-} from "lucide-react";
-
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Eye, Download, Filter, Check, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +30,7 @@ import {
   getRequestById,
   updateRequestStatus,
 } from "@/lib/api/adminRequests.service";
+import { SkeletonRow } from "@/components/ui/skeleton";
 
 // interface User {
 //   id: number;
@@ -65,9 +54,10 @@ interface UserFormValues {
 interface DataTableProps {
   users: any;
   onStatusChange?: (status: any) => void;
+  loading: boolean;
 }
 
-export function DataTable({ users, onStatusChange }: DataTableProps) {
+export function DataTable({ users, onStatusChange, loading }: DataTableProps) {
   /* ================= STATES ================= */
 
   const [statusFilter, setStatusFilter] = useState("all");
@@ -180,37 +170,33 @@ export function DataTable({ users, onStatusChange }: DataTableProps) {
           </TableHeader>
 
           <TableBody>
-            {paginatedUsers.length ? (
+            {loading ? (
+              Array.from({ length: pageSize }).map((_, i) => (
+                <SkeletonRow key={i} />
+              ))
+            ) : paginatedUsers.length ? (
               paginatedUsers.map((item: any) => (
                 <TableRow key={item._id}>
                   {/* Person */}
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
-                        <img
-                          src={item.profilePicture}
-                          alt={item.name}
-                          className="h-10 w-10 rounded-full object-cover border-2 border-[#1bae77]"
-                        />
-                      </div>
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                      </div>
+                      <img
+                        src={item.profilePicture}
+                        alt={item.name}
+                        className="h-10 w-10 rounded-full object-cover border-2 border-[#1bae77]"
+                      />
+                      <p className="font-medium">{item.name}</p>
                     </div>
                   </TableCell>
 
-                  {/* Email */}
                   <TableCell className="text-sm">{item.email}</TableCell>
 
-                  {/* Role */}
                   <TableCell>
                     <Badge variant="outline">{item.type}</Badge>
                   </TableCell>
 
-                  {/* Date */}
                   <TableCell>{formatDate(item.createdAt)}</TableCell>
 
-                  {/* Status */}
                   <TableCell>
                     <Badge
                       className={
@@ -225,10 +211,8 @@ export function DataTable({ users, onStatusChange }: DataTableProps) {
                     </Badge>
                   </TableCell>
 
-                  {/* Actions */}
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      {/* View Button */}
                       <Button
                         size="icon"
                         variant="ghost"
@@ -237,7 +221,6 @@ export function DataTable({ users, onStatusChange }: DataTableProps) {
                         <Eye className="h-4 w-4" />
                       </Button>
 
-                      {/* Accept / Reject sirf Pending pe */}
                       {item.profileStatus === "in-review" && (
                         <>
                           <Button
@@ -247,7 +230,6 @@ export function DataTable({ users, onStatusChange }: DataTableProps) {
                           >
                             <Check className="h-4 w-4" />
                           </Button>
-
                           <Button
                             size="sm"
                             variant="destructive"

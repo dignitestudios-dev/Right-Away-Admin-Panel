@@ -8,7 +8,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getChartLabel } from "@/lib/utils";
 
 const chartConfig = {
   revenue: {
@@ -21,9 +21,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ChartAreaStacked({ data }: { data: any[] }) {
+export function ChartAreaStacked({
+  data,
+  type,
+}: {
+  data: any[];
+  type: "daily" | "weekly" | "monthly";
+}) {
   const chartData = data.map((item) => ({
-    date: formatDate(item.date),
+    date: getChartLabel(item, type),
     revenue: item.revenue,
     ordersCount: item.ordersCount,
   }));

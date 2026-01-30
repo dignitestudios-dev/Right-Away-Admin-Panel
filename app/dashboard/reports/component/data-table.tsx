@@ -36,6 +36,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import EnhancedReportsModal from "./viewmodal";
 import { Label } from "@/components/ui/label";
+import { SkeletonRow } from "@/components/ui/skeleton";
 
 interface User {
   _id: number;
@@ -62,9 +63,10 @@ interface UserFormValues {
 interface DataTableProps {
   reports: User[];
   SetRefech: any;
+  loading: boolean;
 }
 
-export function DataTable({ reports,SetRefech }: DataTableProps) {
+export function DataTable({ reports, SetRefech, loading }: DataTableProps) {
   /* ================= STATES ================= */
 
   const [statusFilter, setStatusFilter] = useState("all");
@@ -131,10 +133,13 @@ export function DataTable({ reports,SetRefech }: DataTableProps) {
           </TableHeader>
 
           <TableBody>
-            {paginatedUsers.length ? (
-              paginatedUsers.map((report) => (
-                <TableRow key={report._id}>
-                  {/* Reporter */}
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonRow index={i} key={i} />
+              ))
+            ) : paginatedUsers.length ? (
+              paginatedUsers.map((report,i) => (
+                <TableRow key={i}>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
@@ -144,22 +149,18 @@ export function DataTable({ reports,SetRefech }: DataTableProps) {
                     </div>
                   </TableCell>
 
-                  {/* Email */}
                   <TableCell className="text-sm">
                     {report.reporter?.email}
                   </TableCell>
 
-                  {/* Order */}
                   <TableCell>
                     <p className="font-medium">{report.reportedUser?.name}</p>
                   </TableCell>
 
-                  {/* Date */}
                   <TableCell>
                     {new Date(report.createdAt).toLocaleDateString()}
                   </TableCell>
 
-                  {/* Actions */}
                   <TableCell className="text-right">
                     <Button
                       size="icon"

@@ -11,12 +11,16 @@ export const getRevenueReport = async (params?: {
     type?: "daily" | "weekly" | "monthly";
     startDate?: string;
     endDate?: string;
+    page?: number;
+    limit?: number;
 }) => {
-    const res = await API.get("/admin/revenue", {
-        params,
-    });
-    return res.data?.data || [];
+    const res = await API.get("/admin/revenue", { params });
+    return {
+        data: res.data?.data || [],
+        pagination: res.data?.pagination || { currentPage: 1, totalPages: 1, itemsPerPage: 5, totalItems: 0 },
+    };
 };
+
 
 /* ================= EXPORT CSV ================= */
 export const exportRevenueCSV = async (params?: {

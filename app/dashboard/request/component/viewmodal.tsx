@@ -1,3 +1,4 @@
+import ImagePreviewModal from "@/components/ImagesPreviewModal";
 import { updateRequestStatus } from "@/lib/api/adminRequests.service";
 import { formatDate } from "@/lib/utils";
 import {
@@ -9,6 +10,32 @@ import {
   XCircle,
   FileImage,
 } from "lucide-react";
+import { useState } from "react";
+const DocCard = ({ title, image }: { title: string; image: string }) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  return (
+    <>
+      <div
+        onClick={() => setPreviewOpen(true)}
+        className="border rounded-xl overflow-hidden bg-white hover:shadow-lg transition cursor-zoom-in"
+      >
+        <img src={image} alt={title} className="w-full h-40 object-cover" />
+        <div className="p-3 text-center text-sm font-medium text-gray-700">
+          {title}
+        </div>
+      </div>
+
+      {previewOpen && (
+        <ImagePreviewModal
+          image={image}
+          title={title}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
+    </>
+  );
+};
 
 export default function EnhancedRequestModal({
   onClose,
@@ -174,6 +201,72 @@ export default function EnhancedRequestModal({
               )}
             </div>
           </div>
+          {/* Documents Section */}
+          <div className="bg-gray-50 rounded-xl p-5 mb-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+              <FileImage size={20} className="text-[#1bae77]" />
+              Verification Documents
+            </h3>
+
+            {/* ===== RIDER DOCUMENTS ===== */}
+            {selectedRequest?.role === "rider" && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {selectedRequest?.driverLicenseImage && (
+                  <DocCard
+                    title="Driver License"
+                    image={selectedRequest.driverLicenseImage}
+                  />
+                )}
+
+                {selectedRequest?.vehicleRegistrationImage && (
+                  <DocCard
+                    title="Vehicle Registration"
+                    image={selectedRequest.vehicleRegistrationImage}
+                  />
+                )}
+
+                {selectedRequest?.insuranceDetailsImage && (
+                  <DocCard
+                    title="Insurance Details"
+                    image={selectedRequest.insuranceDetailsImage}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* ===== COMPANY DOCUMENTS ===== */}
+            {selectedRequest?.role === "company" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {selectedRequest?.businessLicense && (
+                  <DocCard
+                    title="Business License"
+                    image={selectedRequest.businessLicense}
+                  />
+                )}
+
+                {selectedRequest?.businessCertificate && (
+                  <DocCard
+                    title="Business Certificate"
+                    image={selectedRequest.businessCertificate}
+                  />
+                )}
+
+                {selectedRequest?.taxRegistration && (
+                  <DocCard
+                    title="Tax Registration"
+                    image={selectedRequest.taxRegistration}
+                  />
+                )}
+
+                {selectedRequest?.proofAddress && (
+                  <DocCard
+                    title="Proof of Address"
+                    image={selectedRequest.proofAddress}
+                  />
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Message / Description */}
           {selectedRequest.message && (
@@ -188,7 +281,7 @@ export default function EnhancedRequestModal({
           )}
 
           {/* Attached Documents / Images */}
-          {selectedRequest.documents &&
+          {/* {selectedRequest.documents &&
             selectedRequest.documents.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
@@ -215,7 +308,7 @@ export default function EnhancedRequestModal({
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
         </div>
 
         {/* Footer Actions */}

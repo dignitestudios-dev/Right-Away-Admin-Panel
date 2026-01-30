@@ -13,6 +13,9 @@ import {
   Eye,
   FastForward,
   Star,
+  FileImage,
+  Truck,
+  Package,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,9 +42,36 @@ import OrderDetailModal from "../components/order-detail";
 import { useParams, useSearchParams } from "next/navigation";
 import { getUserById, getUserOrders } from "@/lib/api/adminUsers";
 import { Skeleton } from "@/components/ui/skeleton";
+import ImagePreviewModal from "@/components/ImagesPreviewModal";
 
+const DocCard = ({ title, image }: { title: string; image: string }) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  return (
+    <>
+      <div
+        onClick={() => setPreviewOpen(true)}
+        className="border rounded-xl overflow-hidden bg-white hover:shadow-lg transition cursor-zoom-in"
+      >
+        <img src={image} alt={title} className="w-full h-40 object-cover" />
+        <div className="p-3 text-center text-sm font-medium text-gray-700">
+          {title}
+        </div>
+      </div>
+
+      {previewOpen && (
+        <ImagePreviewModal
+          image={image}
+          title={title}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
+    </>
+  );
+};
 const UserDetailPage = () => {
   const [user, setUser] = useState<any>(null);
+  const [vehicle, setVehicle] = useState<any>(null);
   const [address, setAddress] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any>();
@@ -76,6 +106,7 @@ const UserDetailPage = () => {
         const profileRes = await getUserById(userId, role);
         const ordersRes = await getUserOrders(userId, role);
         setUser(profileRes.user);
+        setVehicle(profileRes.vehicle);
         setAddress(profileRes.address);
         setReviews(profileRes.Reviews);
         setOrders(ordersRes || []);
@@ -197,7 +228,41 @@ const UserDetailPage = () => {
           </div>
         </Card>
       )}
+      {vehicle && (
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+            <Truck className="h-5 w-5 text-[#1bae77]" />
+            Vehicle Informations
+          </h3>
+          <div
+            className="p-6 rounded-lg border"
+            style={{ backgroundColor: "#def5e4", borderColor: "#c5ecd3" }}
+          >
+            {/* Rider Details Grid */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-center gap-3">
+                <Truck className="h-5 w-5 text-gray-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600 mb-0.5">Vehicle Type</p>
+                  <p className="font-semibold text-gray-900">
+                    {vehicle?.vehicle}
+                  </p>
+                </div>
+              </div>
 
+              <div className="flex items-center gap-3">
+                <Package className="h-5 w-5 text-gray-500" />
+                <div className="flex-1">
+                  <p className="text-sm text-gray-600 mb-0.5">Vehicle Number</p>
+                  <p className="font-semibold text-gray-900">
+                    {vehicle.registrationNumber}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-6">
         <Card className="p-6 flex items-center gap-4">
@@ -228,51 +293,72 @@ const UserDetailPage = () => {
           </div>
         </Card>
       </div>
-      <div className="grid grid-cols-2 gap-6">
-        {/* Address Section */}
 
-        <Card className="p-6 flex items-start gap-3">
-          <div className="bg-[#1bae77] p-3 rounded-full shrink-0">
-            <MapPin size={24} className="text-white" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900 mb-3">Address</h2>
-            <p className="text-gray-600">
-              {address?.address || "No address found"}
-            </p>
-          </div>
-        </Card>
+      {/* Documents Section */}
+      {role != "user" && (
+        <div className="bg-gray-50 rounded-xl p-5 mb-6">
+          <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+            <FileImage size={20} className="text-[#1bae77]" />
+            Verification Documents
+          </h3>
 
-        <Card className="p-6 flex items-start gap-3">
-          <div className="flex flex-col items-start gap-2">
-            <h2 className="text-xl font-semibold">Reviews</h2>
-
-            {/* Rating Number */}
-            <p className="text-4xl font-bold flex items-center gap-1">
-              {reviews?.rating ?? 0}
-            </p>
-
-            {/* ⭐ Dynamic Stars */}
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Star
-                  key={index}
-                  className={`text-2xl ${
-                    index < (reviews?.rating ?? 0)
-                      ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-300"
-                  }`}
+          {/* ===== RIDER DOCUMENTS ===== */}
+          {role === "rider" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {user?.driverLicenseImage && (
+                <DocCard
+                  title="Driver License"
+                  image={user.driverLicenseImage}
                 />
-              ))}
-            </div>
+              )}
 
-            {/* Review Text */}
-            <p className="text-gray-600">
-              {reviews?.reviews || "No review provided"}
-            </p>
-          </div>
-        </Card>
-      </div>
+              {user?.vehicleRegistrationImage && (
+                <DocCard
+                  title="Vehicle Registration"
+                  image={user.vehicleRegistrationImage}
+                />
+              )}
+
+              {user?.insuranceDetailsImage && (
+                <DocCard
+                  title="Insurance Details"
+                  image={user.insuranceDetailsImage}
+                />
+              )}
+            </div>
+          )}
+
+          {/* ===== COMPANY DOCUMENTS ===== */}
+          {role === "company" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {user?.businessLicense && (
+                <DocCard
+                  title="Business License"
+                  image={user.businessLicense}
+                />
+              )}
+
+              {user?.businessCertificate && (
+                <DocCard
+                  title="Business Certificate"
+                  image={user.businessCertificate}
+                />
+              )}
+
+              {user?.taxRegistration && (
+                <DocCard
+                  title="Tax Registration"
+                  image={user.taxRegistration}
+                />
+              )}
+
+              {user?.proofAddress && (
+                <DocCard title="Proof of Address" image={user.proofAddress} />
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Account Info */}
       {/* <Card className="p-6">

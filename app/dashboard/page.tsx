@@ -46,8 +46,8 @@ const Dashboard = () => {
       <StatCards dashboard={data?.dashboard} />
 
       <div className="grid grid-cols-2 gap-4">
-        <ChartAreaStacked data={data?.revenueGraph || []} />
-        <ChartBarMultiple data={data?.SignUpGraph || []} />
+        <ChartAreaStacked type={timeFrame} data={data?.revenueGraph || []} />
+        <ChartBarMultiple type={timeFrame} data={data?.SignUpGraph || []} />
       </div>
     </div>
   );

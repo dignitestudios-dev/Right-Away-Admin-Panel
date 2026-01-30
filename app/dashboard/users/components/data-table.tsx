@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from "react";
 import {
-  Eye,
-  Download,
-  Search,
-  Filter,
-  CheckCircle,
-  Ban,
-  Package,
-} from "lucide-react";
-
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -21,181 +20,115 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { UserFormDialog } from "./user-form-dialog";
-
+import { Eye, Download, Filter, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { SkeletonRow } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination"; // ✅ Import global pagination
 import { useRouter } from "next/navigation";
-import { exportUsersCSV } from "@/lib/api/adminUsers";
 import { formatDate } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { exportUsersCSV, getUsers } from "@/lib/api/adminUsers";
 
 interface User {
-  id: number;
+  _id: string;
   name: string;
   email: string;
-  avatar: string;
-  plan: string;
-  billing: string;
-  status: string;
-  phone: string;
-  joinedDate: any;
-}
-
-interface UserFormValues {
-  name: string;
-  email: string;
+  phone?: string;
+  profilePicture?: string;
+  createdAt: string;
+  isDeactivatedByAdmin: boolean;
   role: string;
-  plan: string;
-  billing: string;
-  status: string;
-  phone: string;
 }
 
 interface DataTableProps {
-  users: User[];
-  role: any;
-  loading: boolean;
+  role: "user" | "rider" | "company";
 }
 
-const SkeletonRow = (index) => (
-  <TableRow key={`loading-${index}`}>
-    {/* User / Rider */}
-    <TableCell>
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-10 w-10 rounded-full" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-3/4" />
-        </div>
-      </div>
-    </TableCell>
+export function DataTable({ role }: DataTableProps) {
+  const router = useRouter();
 
-    {/* Contact */}
-    <TableCell>
-      <div className="space-y-1">
-        <Skeleton className="h-3 w-3/4" />
-        <Skeleton className="h-2 w-1/2" />
-      </div>
-    </TableCell>
-
-    {/* Join Date */}
-    <TableCell>
-      <Skeleton className="h-3 w-1/2" />
-    </TableCell>
-
-    {/* Status */}
-    <TableCell>
-      <Skeleton className="h-5 w-16 rounded-full" />
-    </TableCell>
-
-    {/* Actions */}
-    <TableCell className="text-right">
-      <Skeleton className="h-8 w-8 rounded-full inline-block" />
-    </TableCell>
-  </TableRow>
-);
-
-export function DataTable({ users, role, loading }: DataTableProps) {
-  /* ================= STATES ================= */
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState("users");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const router = useRouter();
-  /* ================= FILTER LOGIC ================= */
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const [pageSize, setPageSize] = useState(10);
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      user.status.toLowerCase() === statusFilter.toLowerCase();
+  /* ================= FETCH USERS FROM API ================= */
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await getUsers({
+        role,
+        page: currentPage,
+        limit: pageSize,
+        search: searchQuery,
+        status: statusFilter,
+      });
 
-    return matchesSearch && matchesStatus;
-  });
+      setUsers(res.users);
+      setTotalPages(res.pagination.pages);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  console.log(filteredUsers, "filteredUser");
-  /* ================= PAGINATION ================= */
   useEffect(() => {
-    setTotalPages(Math.ceil(filteredUsers.length / pageSize));
-    setCurrentPage(1);
-  }, [filteredUsers.length, pageSize]);
+    loadUsers();
+  }, [currentPage, pageSize, searchQuery, statusFilter, role]);
 
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
+  /* ================= HANDLERS ================= */
+  const handlePreviousPage = () => setCurrentPage((p) => Math.max(p - 1, 1));
+  const handleNextPage = () =>
+    setCurrentPage((p) => Math.min(p + 1, totalPages));
+
+  const handleViewProfile = (user: User) =>
+    router.push(`/dashboard/users/${user._id}?role=${role}`);
+
+  /* ================= FILTER & SEARCH ================= */
+  // You can still optionally filter client-side if needed
+  const filteredUsers = users.filter(
+    (u) =>
+      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) setCurrentPage((p) => p - 1);
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage((p) => p + 1);
-  };
-
-  /* ================= STATUS BADGE ================= */
-
-  const handleViewProfile = (user: User) => {
-    router.push(`/dashboard/users/${user.id}?role=${role}`);
-  };
-
-  const handleViewOrderHistory = (user: User) => {
-    router.push(`/dashboard/users/${user.id}/orders?role=${role}`);
-  };
-
-  /* ================= UI ================= */
   return (
     <div className="w-full space-y-4">
       {/* Header */}
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={() => exportUsersCSV(role)}>
-          <Download className="mr-2 h-4 w-4" />
-          Export
+          <Download className="mr-2 h-4 w-4" /> Export
         </Button>
       </div>
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-wrap gap-4">
-            {/* Search */}
-            <div className="flex-1 min-w-[280px] relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
-              <Input
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+        <CardContent className="p-6 flex flex-wrap gap-4 items-center">
+          <div className="flex-1 min-w-[280px] relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
+            <Input
+              placeholder="Search by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
 
-            {/* Status Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="text-muted-foreground h-5 w-5" />
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="blocked">Blocked</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center gap-2">
+            <Filter className="text-muted-foreground h-5 w-5" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Blocked">Blocked</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -205,7 +138,7 @@ export function DataTable({ users, role, loading }: DataTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{activeTab === "users" ? "User" : "Rider"}</TableHead>
+              <TableHead>User</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Join Date</TableHead>
               <TableHead>Status</TableHead>
@@ -215,70 +148,62 @@ export function DataTable({ users, role, loading }: DataTableProps) {
 
           <TableBody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <SkeletonRow index={index} />
+              Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonRow key={i} index={i} />
               ))
-            ) : paginatedUsers.length ? (
-              paginatedUsers.map((item) => (
-                <TableRow key={item.id}>
-                  {/* User / Rider */}
+            ) : filteredUsers.length ? (
+              filteredUsers.map((user) => (
+                <TableRow key={user._id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
-                        {item.avatar}
-                      </div>
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                      </div>
+                      <img
+                        src={user.profilePicture}
+                        alt={user.name}
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                      <p className="font-medium">{user.name}</p>
                     </div>
                   </TableCell>
 
-                  {/* Contact */}
                   <TableCell>
-                    <p className="text-sm">{item.email}</p>
+                    <p className="text-sm">{user.email}</p>
                     <p className="text-xs text-muted-foreground">
-                      {item.phone}
+                      {user.phone}
                     </p>
                   </TableCell>
 
-                  {/* Join Date */}
                   <TableCell>
                     <span className="text-sm">
-                      {formatDate(item.joinedDate)}
+                      {formatDate(user.createdAt)}
                     </span>
                   </TableCell>
 
-                  {/* Status */}
                   <TableCell>
                     <Badge
-                      variant="secondary"
                       className={
-                        item.status === "Active"
+                        user.isDeactivatedByAdmin === false
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }
                     >
-                      {item.status === "Active" ? "Active" : "Blocked"}
+                      {user.isDeactivatedByAdmin ? "Blocked" : "Active"}
                     </Badge>
                   </TableCell>
 
-                  {/* Actions */}
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleViewProfile(item)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleViewProfile(user)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   No data found
                 </TableCell>
               </TableRow>
@@ -286,47 +211,32 @@ export function DataTable({ users, role, loading }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
-
       {/* Pagination */}
-      <div className="flex justify-between items-center py-4">
-        <div className="flex items-center gap-2">
-          <Label>Show</Label>
+      <div className="flex items-center justify-between py-4">
+        <div className="flex items-center space-x-2">
+          <Label htmlFor="page-size" className="text-sm font-medium">
+            Show
+          </Label>
           <Select
             value={pageSize.toString()}
             onValueChange={(v) => setPageSize(Number(v))}
           >
-            <SelectTrigger className="w-20">
-              <SelectValue />
+            <SelectTrigger id="page-size" className="w-20 cursor-pointer">
+              <SelectValue placeholder={pageSize.toString()} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent side="top">
               <SelectItem value="5">5</SelectItem>
               <SelectItem value="10">10</SelectItem>
               <SelectItem value="20">20</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPrevious={handlePreviousPage}
+          onNext={handleNextPage}
+        />
       </div>
     </div>
   );

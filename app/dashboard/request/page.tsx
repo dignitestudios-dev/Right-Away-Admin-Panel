@@ -9,17 +9,24 @@ const Request = () => {
   const [status, setStatus] = useState<"approved" | "rejected" | "in-review">(
     "in-review",
   );
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     getRequests({ profileStatus: status })
       .then(setRequests)
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [status]);
 
   return (
     <div>
       <h1 className="text-2xl font-bold">Request</h1>
-      <DataTable users={requests} onStatusChange={setStatus} />
+      <DataTable
+        users={requests}
+        loading={loading}
+        onStatusChange={setStatus}
+      />
     </div>
   );
 };
