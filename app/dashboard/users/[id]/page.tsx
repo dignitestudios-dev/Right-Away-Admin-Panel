@@ -74,6 +74,7 @@ const UserDetailPage = () => {
   const [vehicle, setVehicle] = useState<any>(null);
   const [address, setAddress] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any>();
   const [loading, setLoading] = useState(true);
   const params = useParams();
@@ -109,6 +110,7 @@ const UserDetailPage = () => {
         setVehicle(profileRes.vehicle);
         setAddress(profileRes.address);
         setReviews(profileRes.Reviews);
+        setProducts(profileRes.porducts);
         setOrders(ordersRes || []);
       } catch (error) {
         console.error("Failed to load user profile", error);
@@ -395,6 +397,77 @@ const UserDetailPage = () => {
 
       {/* Orders Table */}
       <Card className="p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Products</h2>
+        {/* Table */}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Sub Category</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products?.length > 0 ? (
+                products?.map((product) => (
+                  <TableRow key={product?._id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={product?.images[0]}
+                          width={40}
+                          height={40}
+                          alt="{product?.name}"
+                        />
+                        <p>{product?.name}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(product?.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>{product?.category}</TableCell>
+                    <TableCell>{product?.subCategory}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    No Products found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination */}
+        {/* <div className="flex justify-between items-center py-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div> */}
+      </Card>
+
+      {/* Orders Table */}
+      <Card className="p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Orders</h2>
 
         {/* Filter */}
@@ -477,7 +550,7 @@ const UserDetailPage = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-between items-center py-4">
+        {/* <div className="flex justify-between items-center py-4">
           <Button
             variant="outline"
             size="sm"
@@ -497,7 +570,7 @@ const UserDetailPage = () => {
           >
             Next
           </Button>
-        </div>
+        </div> */}
       </Card>
       <OrderDetailModal
         open={openOrderDetail}
