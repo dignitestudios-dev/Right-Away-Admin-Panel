@@ -11,6 +11,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
+
   const isAuthenticated = localStorage.getItem("authToken");
   useEffect(() => {
     if (!isAuthenticated) {

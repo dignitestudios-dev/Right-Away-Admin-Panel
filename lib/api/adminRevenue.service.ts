@@ -29,13 +29,8 @@ export const exportRevenueCSV = async (params?: {
     endDate?: string;
 }) => {
     const res = await API.get("/admin/revenue/csv", {
-        params,
-        responseType: "blob",
+        params
     });
+    window.open(res.data.data.file, "_blank", "noopener,noreferrer");
 
-    const url = window.URL.createObjectURL(res.data);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "revenue-report.csv";
-    link.click();
 };

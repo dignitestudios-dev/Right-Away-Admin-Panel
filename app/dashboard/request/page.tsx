@@ -9,15 +9,35 @@ const Request = () => {
   const [status, setStatus] = useState<"approved" | "rejected" | "in-review">(
     "in-review",
   );
+  const [filters, setFilters] = useState({});
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+  });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchRequests = async (page = 1, limit?: number, status="in-review") => {
     setLoading(true);
-    getRequests({ profileStatus: status })
-      .then(setRequests)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [status]);
+    try {
+      const res = await getRequests({
+        ...filters,
+        page,
+        profileStatus: status,
+        limit: limit || pagination.itemsPerPage, // use limit if passed
+      });
+      setRequests(res.data);
+      setPagination(res.pagination);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchRequests(1); // fetch first page on filter change
+  }, [filters]);
 
   return (
     <div>
@@ -26,6 +46,12 @@ const Request = () => {
         users={requests}
         loading={loading}
         onStatusChange={setStatus}
+        // Pass limit dynamically
+        setPagination={setPagination}
+        pagination={pagination}
+        onPageChange={(page: number, limit?: number) =>
+          fetchRequests(page, limit, status)
+        }
       />
     </div>
   );

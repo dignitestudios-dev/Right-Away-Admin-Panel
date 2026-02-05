@@ -31,6 +31,7 @@ import {
   updateRequestStatus,
 } from "@/lib/api/adminRequests.service";
 import { SkeletonRow } from "@/components/ui/skeleton";
+import { Pagination } from "@/components/ui/pagination";
 
 // interface User {
 //   id: number;
@@ -55,9 +56,24 @@ interface DataTableProps {
   users: any;
   onStatusChange?: (status: any) => void;
   loading: boolean;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    itemsPerPage: number;
+    totalItems: number;
+  };
+  setPagination;
+  onPageChange: (page: number, limit?: number) => void;
 }
 
-export function DataTable({ users, onStatusChange, loading }: DataTableProps) {
+export function DataTable({
+  users,
+  onStatusChange,
+  loading,
+  pagination,
+  onPageChange,
+  setPagination,
+}: DataTableProps) {
   /* ================= STATES ================= */
 
   const [statusFilter, setStatusFilter] = useState("all");
@@ -113,16 +129,25 @@ export function DataTable({ users, onStatusChange, loading }: DataTableProps) {
     setOpenViewModal(true);
   };
   console.log(users, "filteredUser");
+  const onPageSizeChange = (size: number) => {
+    setPageSize(size);
+    setPagination((prev) => ({
+      ...prev,
+      itemsPerPage: size,
+      currentPage: 1,
+    }));
+    onPageChange(1, size); // ✅ pass size dynamically
+  };
   /* ================= UI ================= */
   return (
     <div className="w-full space-y-4">
       {/* Header */}
-      <div className="flex justify-end gap-2">
+      {/* <div className="flex justify-end gap-2">
         <Button variant="outline">
           <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
-      </div>
+      </div> */}
 
       {/* Filters */}
       <Card>
@@ -260,7 +285,7 @@ export function DataTable({ users, onStatusChange, loading }: DataTableProps) {
           <Label>Show</Label>
           <Select
             value={pageSize.toString()}
-            onValueChange={(v) => setPageSize(Number(v))}
+            onValueChange={(v) => onPageSizeChange(Number(v))}
           >
             <SelectTrigger className="w-20">
               <SelectValue />
@@ -273,27 +298,13 @@ export function DataTable({ users, onStatusChange, loading }: DataTableProps) {
           </Select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
+        {/* Pagination buttons */}
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          onPrevious={() => onPageChange(pagination.currentPage - 1, pageSize)}
+          onNext={() => onPageChange(pagination.currentPage + 1, pageSize)}
+        />
       </div>
 
       {openViewModal && selectedRequest && (

@@ -64,9 +64,24 @@ interface DataTableProps {
   reports: User[];
   SetRefech: any;
   loading: boolean;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    itemsPerPage: number;
+    totalItems: number;
+  };
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
-export function DataTable({ reports, SetRefech, loading }: DataTableProps) {
+export function DataTable({
+  reports,
+  SetRefech,
+  loading,
+  onPageSizeChange,
+  onPageChange,
+  pagination,
+}: DataTableProps) {
   /* ================= STATES ================= */
 
   const [statusFilter, setStatusFilter] = useState("all");
@@ -138,7 +153,7 @@ export function DataTable({ reports, SetRefech, loading }: DataTableProps) {
                 <SkeletonRow index={i} key={i} />
               ))
             ) : paginatedUsers.length ? (
-              paginatedUsers.map((report,i) => (
+              paginatedUsers.map((report, i) => (
                 <TableRow key={i}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -188,8 +203,8 @@ export function DataTable({ reports, SetRefech, loading }: DataTableProps) {
         <div className="flex items-center gap-2">
           <Label>Show</Label>
           <Select
-            value={pageSize.toString()}
-            onValueChange={(v) => setPageSize(Number(v))}
+            value={pagination.itemsPerPage.toString()}
+            onValueChange={(v) => onPageSizeChange(Number(v))}
           >
             <SelectTrigger className="w-20">
               <SelectValue />
@@ -206,19 +221,21 @@ export function DataTable({ reports, SetRefech, loading }: DataTableProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
+            onClick={() => onPageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
           >
             Previous
           </Button>
+
           <span className="text-sm">
-            Page {currentPage} of {totalPages}
+            Page {pagination.currentPage} of {pagination.totalPages}
           </span>
+
           <Button
             variant="outline"
             size="sm"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
+            onClick={() => onPageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages}
           >
             Next
           </Button>

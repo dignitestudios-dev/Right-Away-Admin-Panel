@@ -2,12 +2,20 @@ import { API } from "@/lib/api/axios";
 
 /* ================= LIST REQUESTS ================= */
 export const getRequests = async (params?: {
-    profileStatus?: "approved" | "rejected" | "in-review";
+    profileStatus?: "approved" | "rejected" | "in-review" | string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
 }) => {
     const res = await API.get("/admin/requests", {
         params,
+
     });
-    return res.data?.data || [];
+    return {
+        data: res.data?.data || [],
+        pagination: res.data?.pagination || { currentPage: 1, totalPages: 1, itemsPerPage: 5, totalItems: 0 },
+    };
 };
 
 /* ================= REQUEST DETAIL ================= */

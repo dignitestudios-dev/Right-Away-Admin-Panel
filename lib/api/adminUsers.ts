@@ -54,17 +54,10 @@ export const getUsers = async ({
 export const exportUsersCSV = async (role) => {
     try {
         const res = await API.get("/admin/user/csv", {
-            params: { role },
-            responseType: "blob",
+            params: { role }
         });
+        window.open(res.data.data.file, "_blank", "noopener,noreferrer");
 
-        const blob = new Blob([res.data], { type: "text/csv" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${role}s.csv`;
-        link.click();
-        window.URL.revokeObjectURL(url);
     } catch (error) {
         console.error("exportUsersCSV error:", error);
     }

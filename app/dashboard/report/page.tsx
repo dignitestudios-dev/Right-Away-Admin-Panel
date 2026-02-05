@@ -62,11 +62,11 @@ export default function ReportsPage() {
       <ReportsTable
         loading={loading}
         report={report}
-        pagination={pagination}
         setFilters={setFilters}
         onViewReport={handleViewReport}
-        setPagination={setPagination}
         // Pass limit dynamically
+        setPagination={setPagination}
+        pagination={pagination}
         onPageChange={(page: number, limit?: number) =>
           fetchReports(page, limit)
         }
