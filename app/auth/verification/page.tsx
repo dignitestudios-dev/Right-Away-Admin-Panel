@@ -1,91 +1,92 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { verifyOTP } from "@/lib/slices/authSlice";
+import { verifyOTP, resendOTP } from "@/lib/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store";
+import { toast } from "sonner";
 
 const Verification = () => {
   const [otp, setOtp] = useState(["", "", "", ""]);
+  const [timer, setTimer] = useState(30);
+  const [resendLoading, setResendLoading] = useState(false);
+  const { verifyOTPError } = useSelector((state: RootState) => state.auth);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
-  const { loading, error, isAuthenticated } = useSelector(
-    (state: RootState) => state.auth,
-  );
-  const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+
+  const { loading } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+
+  // ⏳ Countdown Timer
+  useEffect(() => {
+    if (timer === 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timer]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number,
   ) => {
     const value = e.target.value;
 
-    // Only allow numbers
-    if (!/^\d*$/.test(value)) {
-      return;
-    }
-
-    // Limit to single digit
-    if (value.length > 1) {
-      return;
-    }
+    if (!/^\d*$/.test(value)) return;
+    if (value.length > 1) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto focus to next input
-    if (value && index < 5) {
+    if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number,
-  ) => {
-    if (e.key === "Backspace") {
-      e.preventDefault();
-
-      const newOtp = [...otp];
-      if (otp[index]) {
-        // Clear current input
-        newOtp[index] = "";
-        setOtp(newOtp);
-      } else if (index > 0) {
-        // Auto focus to previous input
-        newOtp[index - 1] = "";
-        setOtp(newOtp);
-        inputRefs.current[index - 1]?.focus();
-      }
-    } else if (e.key === "ArrowLeft" && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    } else if (e.key === "ArrowRight" && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-const searchParams = useSearchParams();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const email = searchParams.get("email") || "";
+
     const otpCode = otp.join("");
 
-    if (otpCode.length === 4) {
-      // Verify OTP logic here
+    if (otpCode.length !== 4) return;
+
+    try {
       await dispatch(
         verifyOTP({
-          email: email,
+          email,
           otp: otpCode,
           role: "admin",
         }),
       ).unwrap();
 
-      console.log("OTP submitted:", otpCode);
-      // Redirect to password reset page or dashboard
+      toast.success("OTP Verified Successfully");
       router.push("/auth/reset-password");
+    } catch (err: any) {
+      toast.error(err?.message || "Invalid OTP");
+    }
+  };
+
+  // 🔁 Resend OTP Function
+  const handleResendOTP = async () => {
+    try {
+      setResendLoading(true);
+
+      await dispatch(resendOTP({ email, role: "admin" })).unwrap();
+
+      toast.success("OTP Resent Successfully");
+      setTimer(30); // restart timer
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to resend OTP");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -98,11 +99,11 @@ const searchParams = useSearchParams();
           Verify Your Email
         </h2>
         <p className="text-gray-600">
-          We've sent a 6-digit code to your email address. Enter it below.
+          We've sent a 4-digit code to your email address. Enter it below.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex justify-center gap-2">
           {otp.map((digit, index) => (
             <input
@@ -115,16 +116,35 @@ const searchParams = useSearchParams();
               maxLength={1}
               value={digit}
               onChange={(e) => handleInputChange(e, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-              className="w-12 h-12 text-center text-2xl font-bold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              aria-label={`OTP digit ${index + 1}`}
+              className="w-12 h-12 text-center text-2xl font-bold border border-gray-300 rounded-lg focus:outline-none "
             />
           ))}
         </div>
+          {verifyOTPError && (
+            <p className="text-center text-red-500 mb-4">{verifyOTPError}</p>
+          )}
 
         <Button type="submit" className="w-full" disabled={!isComplete}>
           {loading ? "Verifying..." : "Verify OTP"}
         </Button>
+
+        {/* 🔁 Resend Section */}
+        <div className="text-center text-sm">
+          {timer > 0 ? (
+            <p className="text-gray-500">
+              Resend OTP in <span className="font-semibold">{timer}s</span>
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResendOTP}
+              disabled={resendLoading}
+              className="text-primary cursor-pointer font-medium hover:underline disabled:opacity-50"
+            >
+              {resendLoading ? "Resending..." : "Resend OTP"}
+            </button>
+          )}
+        </div>
 
         <div className="text-center">
           <Link

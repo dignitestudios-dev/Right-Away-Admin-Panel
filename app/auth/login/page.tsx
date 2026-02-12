@@ -18,7 +18,7 @@ const Login = () => {
   const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
   const router = useRouter();
 
-  const { loading, error, isAuthenticated } = useSelector(
+  const { loading, loginError, isAuthenticated } = useSelector(
     (state: RootState) => state.auth,
   );
 
@@ -41,8 +41,6 @@ const Login = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
         <p className="text-gray-600">Sign in to your account</p>
       </div>
-
-      {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
@@ -74,13 +72,14 @@ const Login = () => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
             >
-              {showPassword ? (
+              {!showPassword ? (
                 <EyeOff className="h-5 w-5" />
               ) : (
                 <Eye className="h-5 w-5" />
               )}
             </button>
           </div>
+          {loginError && <p className="text-red-500 mb-4">{loginError}</p>}
         </div>
 
         <div className="mt-6 text-end">

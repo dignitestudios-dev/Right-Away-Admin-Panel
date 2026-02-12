@@ -13,7 +13,9 @@ interface AuthState {
   admin: Admin | null;
   isAuthenticated: boolean;
   loading: boolean;
-  error: string | null;
+  loginError: string | null;
+  resetPasswordError: string | null;
+  verifyOTPError: string | null;
   otpSent: boolean; // for forgot password
 }
 
@@ -21,8 +23,10 @@ const initialState: AuthState = {
   admin: null,
   isAuthenticated: false,
   loading: false,
-  error: null,
+  loginError: null,
   otpSent: false, // for forgot password
+  verifyOTPError: null,
+  resetPasswordError: null,
 };
 
 // Async thunk for login
@@ -57,7 +61,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
         `/auth/logout`,
       );
     } catch (err: any) {
-      return rejectWithValue(err.message || "Logout failed");
+      return rejectWithValue(err?.response?.data?.message || "Logout failed");
     }
   }
 );
@@ -69,7 +73,8 @@ export const resendOTP = createAsyncThunk<void, { email: string; role: string },
 
       await API.post("/auth/resendLoginOTP", payload);
     } catch (err: any) {
-      return rejectWithValue(err.message || "Resend OTP failed");
+      console.log(err, "Resend OTP Error");
+      return rejectWithValue(err?.response?.data?.message || "Resend OTP failed");
     }
   }
 );
@@ -83,7 +88,7 @@ export const verifyOTP = createAsyncThunk<void, { email: string; otp: string; ro
       const data = res?.data?.data
       localStorage.setItem("authToken", data.token)
     } catch (err: any) {
-      return rejectWithValue(err.message || "OTP verification failed");
+      return rejectWithValue(err?.response?.data?.message || "OTP verification failed");
     }
   }
 );
@@ -96,7 +101,7 @@ export const resetPassword = createAsyncThunk<void, { password: string }, { reje
 
       await API.post("/auth/updatePassword", payload);
     } catch (err: any) {
-      return rejectWithValue(err.message || "Reset password failed");
+      return rejectWithValue(err?.response?.data?.message || "Reset password failed");
     }
   }
 );
@@ -109,20 +114,24 @@ const authSlice = createSlice({
     logout: (state) => {
       state.isAuthenticated = false;
       state.admin = null;
-      state.error = null;
+      state.loginError = null;
+      state.verifyOTPError = null;
+      state.resetPasswordError = null;
     },
     resetAuth: (state) => {
       state.admin = null;
       state.isAuthenticated = false;
       state.loading = false;
-      state.error = null;
+      state.loginError = null;
+      state.verifyOTPError = null;
+      state.resetPasswordError = null;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.loginError = null;
       })
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<Admin>) => {
         state.loading = false;
@@ -131,42 +140,42 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Login failed";
+        state.loginError = action.payload || "Login failed";
       })
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.loginError = null;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.loading = false;
         state.isAuthenticated = false;
         state.admin = null;
-        state.error = null;
+        state.loginError = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Logout failed";
+        state.loginError = action.payload || "Logout failed";
       })
-      .addCase(resendOTP.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(resendOTP.pending, (state) => { state.loading = true; state.resetPasswordError = null; })
       .addCase(resendOTP.fulfilled, (state) => {
         state.loading = false;
         state.otpSent = true;
       })
       .addCase(resendOTP.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Resend OTP failed";
+        state.resetPasswordError = action.payload || "Resend OTP failed";
       })
-      .addCase(verifyOTP.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(verifyOTP.pending, (state) => { state.loading = true; state.verifyOTPError = null; })
       .addCase(verifyOTP.fulfilled, (state) => { state.loading = false; })
       .addCase(verifyOTP.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "OTP verification failed";
+        state.verifyOTPError = action.payload || "OTP verification failed";
       })
-      .addCase(resetPassword.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(resetPassword.pending, (state) => { state.loading = true; state.resetPasswordError = null; })
       .addCase(resetPassword.fulfilled, (state) => { state.loading = false; })
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || "Reset password failed";
+        state.resetPasswordError = action.payload || "Reset password failed";
       });
   },
 });

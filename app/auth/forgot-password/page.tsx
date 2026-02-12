@@ -9,12 +9,13 @@ import Link from "next/link";
 import { resendOTP } from "@/lib/slices/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/lib/store";
+import { toast } from "sonner";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
-  const { loading, error, isAuthenticated } = useSelector(
+  const { loading, resetPasswordError, isAuthenticated } = useSelector(
     (state: RootState) => state.auth,
   );
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,7 +29,8 @@ const ForgotPassword = () => {
       await dispatch(resendOTP({ email, role: "admin" })).unwrap();
       router.push(`/auth/verification?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
-      console.error("Failed to resend OTP:", err);
+      console.log(err, "Forgot Password Error");
+      toast.error(err?.message);
     }
   };
 
@@ -54,10 +56,13 @@ const ForgotPassword = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+          {resetPasswordError && (
+            <p className="text-red-500 mb-4">{resetPasswordError}</p>
+          )}
         </div>
 
         <Button type="submit" className="w-full">
-          {loading ? "Sending..." : "Send Reset Link"}
+          {loading ? "Sending..." : "Send Otp"}
         </Button>
 
         <div className="text-center">
