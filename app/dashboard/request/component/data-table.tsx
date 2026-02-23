@@ -128,7 +128,6 @@ export function DataTable({
     setSelectedRequest(detail);
     setOpenViewModal(true);
   };
-  console.log(users, "filteredUser");
   const onPageSizeChange = (size: number) => {
     setPageSize(size);
     setPagination((prev) => ({
@@ -224,13 +223,14 @@ export function DataTable({
 
                   <TableCell>
                     <Badge
-                      className={
-                        item.profileStatus === "in-review"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : item.profileStatus === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                      }
+                      className={`capitalize
+                        ${
+                          item.profileStatus === "in-review"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : item.profileStatus === "approved"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                        }`}
                     >
                       {item.profileStatus}
                     </Badge>

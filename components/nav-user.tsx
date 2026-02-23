@@ -6,6 +6,7 @@ import {
   LogOut,
   BellDot,
   CircleUser,
+  LockKeyhole,
 } from "lucide-react";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
@@ -29,6 +30,19 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { AppDispatch } from "@/lib/store";
+import { useState } from "react";
+import ChangePasswordModal from "./ui/ChangePasswordModal";
+import { changePassword } from "@/lib/api/auth.api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 export function NavUser({
   user,
@@ -42,7 +56,8 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const dispatch = useDispatch<AppDispatch>(); // ✅ Use typed dispatch
   const router = useRouter();
-
+  const [open, setOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const handleLogout = async () => {
     await dispatch(logoutUser()).unwrap();
     router.push("/auth/login");
@@ -88,13 +103,56 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => setOpen(true)}
+              className="cursor-pointer"
+            >
+              <LockKeyhole className="mr-2 h-4 w-4" />
+              Change Password
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setLogoutOpen(true)}
+              className="cursor-pointer"
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <ChangePasswordModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onSubmit={async (data) => {
+          await changePassword(data);
+          console.log("Password changed successfully");
+        }}
+      />
+      <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <AlertDialogContent size="default">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Logout</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log out of your account?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={async () => {
+                await dispatch(logoutUser()).unwrap();
+                localStorage.removeItem("persist:root");
+                localStorage.removeItem("authToken");
+                router.push("/auth/login");
+              }}
+            >
+              Yes, Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarMenu>
   );
 }

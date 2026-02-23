@@ -16,6 +16,7 @@ import {
   FileImage,
   Truck,
   Package,
+  ArrowLeft,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -132,7 +133,7 @@ const UserDetailPage = () => {
       order.status.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
-
+  console.log(filteredOrders, "filter orders");
   useEffect(() => {
     setTotalPages(Math.ceil(filteredOrders.length / pageSize));
     setCurrentPage(1);
@@ -160,7 +161,17 @@ const UserDetailPage = () => {
   return (
     <div className="p-2 min-h-screen space-y-6">
       {/* Header Card */}
-
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => window.history.back()}
+          className=" text-gray-600 cursor-pointer hover:text-gray-900"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <h2 className="text-xl font-bold text-gray-900  capitalize">
+          {role} Details
+        </h2>
+      </div>
       {loading ? (
         <div className="flex items-start justify-between mb-6 gap-6">
           <Skeleton className="w-32 h-32 rounded-full" /> {/* Avatar */}
@@ -396,75 +407,77 @@ const UserDetailPage = () => {
       </Card> */}
 
       {/* Orders Table */}
-      <Card className="p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Products</h2>
-        {/* Table */}
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Sub Category</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products?.length > 0 ? (
-                products?.map((product) => (
-                  <TableRow key={product?._id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={product?.images[0]}
-                          width={40}
-                          height={40}
-                          alt="{product?.name}"
-                        />
-                        <p>{product?.name}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(product?.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{product?.category}</TableCell>
-                    <TableCell>{product?.subCategory}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
+      {role === "company" && (
+        <Card className="p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Products</h2>
+          {/* Table */}
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    No Products found
-                  </TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Sub Category</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {products?.length > 0 ? (
+                  products?.map((product) => (
+                    <TableRow key={product?._id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={product?.images[0]}
+                            width={40}
+                            height={40}
+                            alt="{product?.name}"
+                          />
+                          <p>{product?.name}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(product?.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{product?.category}</TableCell>
+                      <TableCell>{product?.subCategory}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center">
+                      No Products found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-        {/* Pagination */}
-        {/* <div className="flex justify-between items-center py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div> */}
-      </Card>
+          {/* Pagination */}
+          <div className="flex justify-between items-center py-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* Orders Table */}
       <Card className="p-6">
@@ -516,6 +529,7 @@ const UserDetailPage = () => {
                     </TableCell>
                     <TableCell>
                       <Badge
+                      className="capitalize"
                         variant={
                           order.status === "completed"
                             ? ("success" as any)
@@ -550,7 +564,7 @@ const UserDetailPage = () => {
         </div>
 
         {/* Pagination */}
-        {/* <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center py-4">
           <Button
             variant="outline"
             size="sm"
@@ -570,7 +584,7 @@ const UserDetailPage = () => {
           >
             Next
           </Button>
-        </div> */}
+        </div>
       </Card>
       <OrderDetailModal
         open={openOrderDetail}

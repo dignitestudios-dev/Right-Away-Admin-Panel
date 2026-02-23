@@ -36,3 +36,17 @@ export const refreshToken = async () => {
   }
   return response.data;
 };
+
+
+// Change password API call
+export const changePassword = async (data: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const payload = {
+    password: data.currentPassword,
+    newPassword: data.newPassword
+  }
+  const response = await API.post('/auth/changePassword', payload);
+  return response.data;
+};
